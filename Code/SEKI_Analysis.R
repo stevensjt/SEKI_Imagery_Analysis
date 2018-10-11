@@ -237,7 +237,7 @@ library(grid)
 #r14scb <-
 #  raster("./Processed Data/Classified Images/Final rasters/2014_raster_match_SCB.tif")
 #tmp <- reclassify(r14scb,c(0.5,1.5,2,1.5,2.5,1))
-#writeRaster(tmp,"./Processed Data/Classified Images/Final rasters/2014_raster_match_SCB_fixed.tif")
+#writeRaster(tmp,"./Processed Data/Classified Images/Final rasters/2014_raster_match_SCB_fixed.tif") 
 
 #r14scb <-
 #  raster("./Processed Data/Classified Images/Final rasters/2014_raster_match_SCB_fixed.tif")
