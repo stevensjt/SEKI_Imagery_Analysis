@@ -471,24 +471,53 @@ sm4 <-
 sm4$Year <- "2017_07"
 names(sm4)[names(sm4)=="Soil Sat (%)"] = "sm"
 names(sm4)[names(sm4)=="Veg (Conifer, Shrub, Sparse, Wetland)"] = "Veg"
+sm5 <- 
+  read_excel("./Raw Data/Soil Moisture/SoilMoistureForms_SEKI_Jun2018_Final.xlsx",
+             sheet = "AllTDR")
+sm5$Year <- "2018_06"
+names(sm5)[names(sm5)=="Soil Sat (%)"] = "sm"
+names(sm5)[names(sm5)=="Veg (Conifer, Shrub, Sparse, Wetland)"] = "Veg"
 
 sm <- rbind(
   sm1[,c("Year","LatPoint", "LonPoint", "sm" ,"Site","Veg")],
   sm2[,c("Year","LatPoint", "LonPoint", "sm" ,"Site","Veg")],
   sm3[,c("Year","LatPoint", "LonPoint", "sm" ,"Site","Veg")],
-  sm4[,c("Year","LatPoint", "LonPoint", "sm" ,"Site","Veg")]
+  sm4[,c("Year","LatPoint", "LonPoint", "sm" ,"Site","Veg")],
+  sm5[,c("Year","LatPoint", "LonPoint", "sm" ,"Site","Veg")]
   
 )
 
 sm$sm[c(grep("water",sm$sm), grep("Water",sm$sm), grep("sat",sm$sm), grep("Sat",sm$sm),
         grep("999999900",sm$sm))] <- "100.00"
+sm$sm <- as.numeric(sm$sm) #warning ok, we want to introduce NA's for text.
 sm$sm[sm$sm>100 & !is.na(sm$sm)] <- 100 #Fix a few TDR glitches from wet soil or standng h2o
-sm$sm <- as.numeric(sm$sm) #warning ok, that's what we want.
-sm$Veg[c(grep("Shrub", sm$Veg), grep("shrub",sm$Veg))] <- "shrub"
-sm$Veg[grep("Wet meadow", sm$Veg)] <- "dense meadow"
-sm$Veg[c(grep("grasses", sm$Veg), grep("open, meadow",sm$Veg),
-         grep("meadow, open",sm$Veg))] <- "sparse meadow"
-sm$Veg[c(grep("Conifer", sm$Veg), grep("conifer",sm$Veg))] <- "mixed conifer"
+
+##Updated data read-in##
+sm <- 
+  read_excel("./Raw Data/Soil Moisture/SoilMoistureForms_SEKI_Combined_AllNums.xlsx",
+             col_types = c("guess", rep("skip",2),"text", rep("skip",6),
+                           rep("numeric",4), rep("guess",5), rep("skip",7)),
+             col_names = c("MEASID","Site","LonPoint","LatPoint","sm","ID",
+                           "Zone","Notes","Veg_Orig","Veg","Trip"),
+             skip = 1, na = "NA",
+             sheet = "AllTDR")
+sm$Year <- NA
+#sm$Veg <- NA #deprecate, added manually to spreadsheet
+sm[grep("2016",sm$Trip),"Year"] <- "2016"
+sm[grep("2017",sm$Trip),"Year"] <- "2017"
+sm[grep("2018",sm$Trip),"Year"] <- "2018"
+#sm$Year <- factor (sm$Year)
+
+#Merge veg classes into target 4 classes:
+sm$Veg[c(grep("Shrub", sm$Veg_Orig), grep("shrub",sm$Veg_Orig))] <- "shrub"
+sm$Veg[c(grep("Wet meadow", sm$Veg_Orig),grep("Wet Meadow", sm$Veg_Orig),
+         which((sm$Site=="GBW1" | sm$Site=="GBW3")
+               & sm$Veg_Orig=="Meadow"))] <- "dense meadow"
+sm$Veg[c(grep("grasses", sm$Veg_Orig), grep("open, meadow",sm$Veg_Orig),
+         grep("meadow, open",sm$Veg_Orig),grep("Meadow, Open",sm$Veg_Orig),
+         which(sm$Site=="GBM2"&sm$Veg_Orig=="Meadow"))] <- "sparse meadow"
+sm$Veg[c(grep("Conifer", sm$Veg_Orig), grep("conifer",sm$Veg_Orig),
+         grep("Forest",sm$Veg_Orig),grep("forest",sm$Veg_Orig))] <- "mixed conifer"
 
 
 ####3b. Analysis####
@@ -513,11 +542,12 @@ sum_table_sm_yr <-
   group_by(Veg, Year) %>%
   summarize(mean_sm = mean(sm, na.rm = T),
             sd_sm = sd(sm, na.rm = T),
-            se_sm = std.error(sm, na.rm = T)
+            se_sm = std.error(sm, na.rm = T) ,
+            sites = paste(unique(Site), collapse = ", ")
   )
 dodge <- position_dodge(width=0.9)
 
-pdf("./Figures/MS/Fig5.pdf", width = 8, height = 8)
+pdf("./Figures/MS/Fig5_11_20.pdf", width = 8, height = 8)
 ggplot(sum_table_sm_yr, aes(x = Veg, fill = Year)) +
   geom_col(aes(y=mean_sm), position = position_dodge())+
   geom_errorbar(aes(ymax = mean_sm + se_sm, ymin = mean_sm - se_sm),
