@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xml:lang="en"><Esri><CreaDate>20181220</CreaDate><CreaTime>16234300</CreaTime><ArcGISFormat>1.0</ArcGISFormat><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="c:\program files (x86)\arcgis\desktop10.6\ArcToolbox\Toolboxes\Spatial Analyst Tools.tbx\ExtractMultiValuesToPoints" Date="20181220" Time="161341">ExtractMultiValuesToPoints All_TDR "Fire_Max_Severity.tif Fire_Max_S" NONE</Process></lineage></DataProperties></Esri></metadata>

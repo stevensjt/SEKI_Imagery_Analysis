@@ -1,7 +1,7 @@
 #Created by Gabrielle Boisrame
 #Train models using measured soil moisture
 
-AggData=1 #For grouping measurements that are the same veg type at the same site
+AggData=0 #For grouping measurements that are the same veg type at the same site
 Ghost=0   #For adding in "ghost" measurements to counteract effects of missing data
 PICOsep=0  #For separating PICO from other conifers
 
@@ -18,16 +18,13 @@ library(hydroGOF)
 #library(tiff)
 
 #Load data
-SoilM <- read.csv('../Raw Data/Soil Moisture/SoilMoistureForms_SEKI_Combined_AllNums.csv')    #('SoilMoistureMATLAB_All_10_02_15.csv')
+SoilM <- read.table('../Raw Data/Soil Moisture/SoilMoisture_SEKI_Combined_GISextract.csv',header=TRUE)    #('SoilMoistureMATLAB_All_10_02_15.csv')
 #Choose early or late season
 #SoilM<-SoilM[SoilM$DOY>180,] #Late Summer
 #SoilM<-SoilM[(SoilM$DOY>153)&(SoilM$DOY<180),] #June
 
-unique(SoilM[,c("Veg","SubSite","veg12")])
 
-#SoilM <- read.csv('SoilMoistureMATLAB_June14_01_23_15.csv')
-#SoilM <- read.csv('SoilMoistureMATLAB_Aug14_12_2_14.csv')
-thetaM <- as.numeric(SoilM$VWC)
+thetaM <- as.numeric(SoilM$Soil_Sat)
 
 #Remove NaNs (rocks)
 SoilM=SoilM[!is.na(thetaM),]
@@ -40,13 +37,13 @@ if (PICOsep){
 }
 
 #Transform aspect to be index from 0 to 1
-AspInd=.5*(1-cos(pi*(SoilM[,'Aspect']-30)/180)) 
-AspInd[SoilM[,'Aspect']==-1]=0
-SoilM$AspectDeg=SoilM$Aspect
+AspInd=.5*(1-cos(pi*(SoilM[,'aspect']-30)/180)) 
+AspInd[SoilM[,'aspect']<0]=0
+SoilM$AspectDeg=SoilM$aspect
 SoilM$Aspect=AspInd
 
 
-if (AggData){
+if (AggData){ #If we decide to use this with SEKI data, need to add Subsites.
   source("Rfiles/AggSubSites.R")
   SoilMa<-AggSubSites(SoilM)
   }
@@ -54,8 +51,12 @@ SoilM=SoilMa
 thetaM=SoilM$VWC
 
 #New: Make sure integers are integers
-SoilM$Year<-as.integer(SoilM$Year)
-SoilM$SevNum<-as.integer(SoilM$SevNum)
+SoilM$Fire_Year<-as.integer(SoilM$Fire_Year_)
+SoilM$Fire_Num<-as.integer(SoilM$Fire_Num)
+#SoilM$SevNum<-as.integer(SoilM$SevNum)
+
+SoilM$Veg73<-as.numeric(SoilM$X1973_veg)
+SoilM$Veg14<-as.numeric(SoilM$X2014_veg)
 
 #VarName='veg12'
 #plot(SoilMa[,VarName],sqrt(SoilMVar[,VarName]),xlab='Mean',ylab='Std Dev',main=VarName)
@@ -94,10 +95,10 @@ if(AggData==0){
 
 
 GrpVWC<-c(10,25,50,60)
-SoilM$VegChange<-(10*SoilM$veg69+SoilM$veg12)
+SoilM$VegChange<-(10*SoilM$Veg73+SoilM$Veg14)
 
 
-SiteVeg<-aggregate(SoilM$VegChange,list(SoilM$SiteNum),median)
+SiteVeg<-aggregate(SoilM$VegChange,list(SoilM$Site),median)
 GrpVeg<-sort(unique(SiteVeg$x))
 
 SiteMeans$WetCat=1
@@ -115,7 +116,7 @@ plot(SoilM$VegChange,SoilM$VWC)
 hist(SoilM$SiteNum)
 
 #Correlation Matrix
-CM=cor(SoilM[,c(10:16,20:21,30:34)])
+CM=cor(SoilM[,c(12:14,32:43)])
 .01*round(CM*100)
 sum((abs(CM)>.7)&(CM<1))/2
 sum((abs(CM)>.4)&(CM<1))/2
