@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xml:lang="en"><Esri><CreaDate>20181220</CreaDate><CreaTime>15415800</CreaTime><ArcGISFormat>1.0</ArcGISFormat><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="c:\program files (x86)\arcgis\desktop10.6\ArcToolbox\Toolboxes\Conversion Tools.tbx\PolygonToRaster" Date="20181220" Time="154158">PolygonToRaster firep15_1 YEAR_ "C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\Fire_Year.tif" CELL_CENTER NONE 43</Process></lineage></DataProperties></Esri></metadata>
