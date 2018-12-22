@@ -46,13 +46,7 @@ SoilM$AspectDeg=SoilM$aspect
 SoilM$Aspect=AspInd
 
 
-if (AggData){ #If we decide to use this with SEKI data, need to add Subsites.
-  source("Rfiles/AggSubSites.R")
-  SoilMa<-AggSubSites(SoilM)
-  
-SoilM=SoilMa
-thetaM=SoilM$VWC
-}
+
 
 #Get dates playing nice
 SoilM$Date <- as.Date(SoilM$TimeStamp,format="%m/%d/%Y")
@@ -72,6 +66,15 @@ SoilM$Veg14<-as.numeric(SoilM$X2014_veg)
 #Get time since fire
 SoilM$Time_Since_Fire <- (SoilM$Year-SoilM$Fire_Year)
 SoilM$Time_Since_Fire[SoilM$Time_Since_Fire>100]=100 #Set max years since fire to 100
+
+
+if (AggData){ #If we decide to use this with SEKI data, need to add Subsites.
+  source("Rfiles/AggSubSites.R")
+  SoilMa<-AggSubSites(SoilM)
+  
+  SoilM=SoilMa
+  thetaM=SoilM$VWC
+}
 
 #VarName='Veg14'
 #plot(SoilMa[,VarName],sqrt(SoilMVar[,VarName]),xlab='Mean',ylab='Std Dev',main=VarName)
@@ -176,6 +179,7 @@ library(randomForest)
 SoilM$VWC<-thetaM
 SoilM<-SoilM[SoilM$VegChange>0] #FOR NOW remove bad data points. Fix data later.
 
+#Set certain values as factors, since order doesn't matter.
 SoilM$Veg14<-as.factor(SoilM$Veg14)
 SoilM$Veg73<-as.factor(SoilM$Veg73)
 SoilM$Year<-as.factor(SoilM$Year)
