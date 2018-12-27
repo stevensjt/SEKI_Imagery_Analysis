@@ -555,3 +555,18 @@ ggplot(sum_table_sm_yr, aes(x = Veg, fill = Year)) +
   labs(y = "mean soil moisture (% VWC)") +
   theme_bw()
 dev.off()
+
+sum_table_sm_trip <-
+  sm[which(!is.na(sm$Veg)),] %>%
+  group_by(Veg, Trip) %>%
+  summarize(mean_sm = mean(sm, na.rm = T),
+            sd_sm = sd(sm, na.rm = T),
+            se_sm = std.error(sm, na.rm = T) ,
+            sites = paste(unique(Site), collapse = ", ")
+  )
+
+ggplot(sum_table_sm_trip, aes(x = Veg, fill = Trip)) +
+  geom_col(aes(y=mean_sm), position = position_dodge())+
+  geom_errorbar(aes(ymax = mean_sm + se_sm, ymin = mean_sm - se_sm),
+                position = position_dodge()) +
+  labs(y = "mean soil moisture (% VWC)")
