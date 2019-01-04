@@ -1,8 +1,8 @@
 #Created by Gabrielle Boisrame
 #Train models using measured soil moisture
 
-AggData=0 #For grouping measurements that are the same veg type at the same site
-Ghost=0   #For adding in "ghost" measurements to counteract effects of missing data
+AggData=1 #For grouping measurements that are the same veg type at the same site
+Ghost=1   #For adding in "ghost" measurements to counteract effects of missing data
 PICOsep=0  #For separating PICO from other conifers
 
 library(nlme) # fit regression w/ spatially correlated errors
