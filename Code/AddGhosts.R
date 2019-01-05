@@ -10,7 +10,7 @@ AddGhosts <- function(SoilM){
   
   for(i in AllSubSites){
     i
-    npts<-length(SoilM$VWC)
+    npts<-length(SoilM$Soil_Sat)
     SubMat<-SoilM[SoilM$SubSite==i,]
     YrsEarlySummer<-unique(SubMat$Year[SubMat$DOY<180])
     NYES<-length(YrsEarlySummer)
@@ -32,7 +32,7 @@ AddGhosts <- function(SoilM){
           }
         else{#NOT DONE. What if there are 2 years w/ both early and late summer but one w/out? Is it worth filling it in?
         }
-        npts=length(SoilM$VWC)
+        npts=length(SoilM$Soil_Sat)
       }
       else if ((NYES==(NYLS-1))&&(NYES==1)) {#Replicate year of early summer data
         Mssng<-which(YrsLateSummer%in%YrsEarlySummer)
@@ -44,11 +44,11 @@ AddGhosts <- function(SoilM){
         }
         else{#NOT DONE
         }
-        npts=length(SoilM$VWC)
+        npts=length(SoilM$Soil_Sat)
       }
       else if (NYES==0) {
         
-        if (mean(SubMat$VWC)<20){mvwc=2.9}else{mvwc=1.4}
+        if (mean(SubMat$Soil_Sat)<20){mvwc=2.9}else{mvwc=1.4}
         NYES
         mvwc
         for (j in YrsLateSummer) {
@@ -57,12 +57,12 @@ AddGhosts <- function(SoilM){
           SoilM[(npts+1):(npts+length(LateSumm1$DOY)),]=LateSumm1
           SoilM$Year[(npts+1):(npts+length(LateSumm1$DOY))]=j
           SoilM$DOY[(npts+1):(npts+length(LateSumm1$DOY))]=150
-          SoilM$VWC[(npts+1):(npts+length(LateSumm1$DOY))]=pmin(55,mvwc*LateSumm1$VWC)
-          npts=length(SoilM$VWC)              
+          SoilM$Soil_Sat[(npts+1):(npts+length(LateSumm1$DOY))]=pmin(55,mvwc*LateSumm1$Soil_Sat)
+          npts=length(SoilM$Soil_Sat)              
         }}
       else if (NYLS==0) {
         
-        if (mean(SubMat$VWC)<30){mvwc=.35
+        if (mean(SubMat$Soil_Sat)<30){mvwc=.35
          #If it's a relatively dry site
         } else {mvwc=.8 #wetter sites were between .6 and 1 of early summer VWC in late summer
         }
@@ -74,8 +74,8 @@ AddGhosts <- function(SoilM){
           SoilM[(npts+1):(npts+length(EarlySumm1$DOY)),]=EarlySumm1
           SoilM$Year[(npts+1):(npts+length(EarlySumm1$DOY))]=j
           SoilM$DOY[(npts+1):(npts+length(EarlySumm1$DOY))]=210
-          SoilM$VWC[(npts+1):(npts+length(EarlySumm1$DOY))]=mvwc*EarlySumm1$VWC #drier sites decreased at about 0.001/day or 1-2%/day. Mean proportion of late to early was around 0.35.
-          npts=length(SoilM$VWC)
+          SoilM$Soil_Sat[(npts+1):(npts+length(EarlySumm1$DOY))]=mvwc*EarlySumm1$Soil_Sat #drier sites decreased at about 0.001/day or 1-2%/day. Mean proportion of late to early was around 0.35.
+          npts=length(SoilM$Soil_Sat)
         }
       }
     }

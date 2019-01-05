@@ -1,8 +1,8 @@
 #Created by Gabrielle Boisrame
 #Train models using measured soil moisture
 
-AggData=0 #For grouping measurements that are the same veg type at the same site
-Ghost=0   #For adding in "ghost" measurements to counteract effects of missing data
+AggData=1 #For grouping measurements that are the same veg type at the same site
+Ghost=0  #For adding in "ghost" measurements to counteract effects of missing data
 PICOsep=0  #For separating PICO from other conifers
 
 library(nlme) # fit regression w/ spatially correlated errors
@@ -24,7 +24,7 @@ SoilM <- read.csv('../Raw Data/Soil Moisture/SoilMoisture_SEKI_Combined_GISextra
 #SoilM<-SoilM[SoilM$DOY>180,] #Late Summer
 #SoilM<-SoilM[(SoilM$DOY>153)&(SoilM$DOY<180),] #June
 
-SoilM <-SoilM[SoilM$Site!='Calibration'] #Remove a few calibration points
+SoilM <-SoilM[SoilM$Site!='Calibration',] #Remove a few calibration points
 
 
 thetaM <- as.numeric(SoilM$Soil_Sat)
@@ -69,11 +69,11 @@ SoilM$Time_Since_Fire[SoilM$Time_Since_Fire>100]=100 #Set max years since fire t
 
 
 if (AggData){ #If we decide to use this with SEKI data, need to add Subsites.
-  source("Rfiles/AggSubSites.R")
+  source("AggSubSites.R")
   SoilMa<-AggSubSites(SoilM)
   
   SoilM=SoilMa
-  thetaM=SoilM$VWC
+  thetaM=SoilM$Soil_Sat
 }
 
 #VarName='Veg14'
@@ -93,10 +93,10 @@ hist(thetaM)
 #Add Ghost Sites 
 if(Ghost){
 SoilM_o = SoilM #Hold a copy of original data
-source("Rfiles/AddGhosts.R")
+source("AddGhosts.R")
 SoilM<-AddGhosts(SoilM)
 
-thetaM<-SoilM$VWC
+thetaM<-SoilM$Soil_Sat
 }
 
 if(AggData==0){
@@ -107,8 +107,8 @@ if(AggData==0){
   #SiteMeans<-aggregate(thetaM,list(SoilM$SiteNum),quantile,.6)
   #Divide sites into groups
 }else{
-  SiteMeansA<-SoilM[,c('SiteNum','SubSite','VWC')]
-  SiteMeans<-aggregate(SiteMeansA$VWC,list(round(SiteMeansA$Site)),max)
+  SiteMeansA<-SoilM[,c('SubSite','Soil_Sat')]
+  SiteMeans<-aggregate(SiteMeansA$Soil_Sat,list(round(SiteMeansA$SubSite)),max)
   SiteCounts<-aggregate(thetaM,list(SoilM$Site),length)
 }
 
@@ -177,7 +177,7 @@ thetaMs<-sqrt(thetaM)
 library(randomForest)
 
 SoilM$VWC<-thetaM
-SoilM<-SoilM[SoilM$VegChange>0] #FOR NOW remove bad data points. Fix data later.
+#SoilM<-SoilM[SoilM$VegChange>0] #FOR NOW remove bad data points. Fix data later.
 
 #Set certain values as factors, since order doesn't matter.
 SoilM$Veg14<-as.factor(SoilM$Veg14)
@@ -777,12 +777,12 @@ TWIPred=Xgood$TWI.10m[ToPredict]
 SevPred=Xgood$SevNum[ToPredict]
 SlpPred=Xgood$Slope[ToPredict]
 ElevPred=Xgood$Elev[ToPredict]
-save(Veg14Pred,file='ModeledVWC/SubSiteMeans/Veg14pred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
-save(Veg69Pred,file='ModeledVWC/SubSiteMeans/Veg69pred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
-save(LonPred,file='ModeledVWC/SubSiteMeans/Lonpred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
-save(LatPred,file='ModeledVWC/SubSiteMeans/Latpred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
-save(TWIPred,file='ModeledVWC/SubSiteMeans/TWIpred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
-save(thetaMod,file='ModeledVWC/SubSiteMeans/VWCpred_Y1970D160_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
+#save(Veg14Pred,file='ModeledVWC/SubSiteMeans/Veg14pred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
+#save(Veg69Pred,file='ModeledVWC/SubSiteMeans/Veg69pred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
+#save(LonPred,file='ModeledVWC/SubSiteMeans/Lonpred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
+#save(LatPred,file='ModeledVWC/SubSiteMeans/Latpred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
+#save(TWIPred,file='ModeledVWC/SubSiteMeans/TWIpred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
+#save(thetaMod,file='ModeledVWC/SubSiteMeans/VWCpred_Y1970D160_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
 
 
 
