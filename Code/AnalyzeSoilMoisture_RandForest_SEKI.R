@@ -6,22 +6,25 @@ Ghost=1   #For adding in "ghost" measurements to counteract effects of missing d
 PICOsep=0  #For separating PICO from other conifers
 
 library(nlme) # fit regression w/ spatially correlated errors
-library(gstat) # classical geostatistics
-library(MASS)
-library(timeSeries)
-library(sp)
-library(matrixStats)
-library(Hmisc)
-library(plyr)
-library(xts)
-library(hydroGOF)
+library(chron)
+#library(gstat) # classical geostatistics
+#library(MASS)
+#library(timeSeries)
+#library(sp)
+#library(matrixStats)
+#library(Hmisc)
+#library(plyr)
+#library(xts)
+#library(hydroGOF)
 #library(tiff)
 
 #Load data
-SoilM <- read.table('../Raw Data/Soil Moisture/SoilMoisture_SEKI_Combined_GISextract.csv',header=TRUE)    #('SoilMoistureMATLAB_All_10_02_15.csv')
+SoilM <- read.csv('../Raw Data/Soil Moisture/SoilMoisture_SEKI_Combined_GISextract.csv',header=TRUE)    #('SoilMoistureMATLAB_All_10_02_15.csv')
 #Choose early or late season
 #SoilM<-SoilM[SoilM$DOY>180,] #Late Summer
 #SoilM<-SoilM[(SoilM$DOY>153)&(SoilM$DOY<180),] #June
+
+SoilM <-SoilM[SoilM$Site!='Calibration'] #Remove a few calibration points
 
 
 thetaM <- as.numeric(SoilM$Soil_Sat)
@@ -33,7 +36,7 @@ SoilM=SoilM[thetaM>=0,]
 thetaM=thetaM[thetaM>=0]
 
 if (PICOsep){
-  SoilM$veg12[SoilM$VegNum==3.4]=1.5 #Separate out PICOs
+  SoilM$Veg14[SoilM$VegNum==3.4]=1.5 #Separate out PICOs
 }
 
 #Transform aspect to be index from 0 to 1
@@ -43,22 +46,37 @@ SoilM$AspectDeg=SoilM$aspect
 SoilM$Aspect=AspInd
 
 
-if (AggData){ #If we decide to use this with SEKI data, need to add Subsites.
-  source("Rfiles/AggSubSites.R")
-  SoilMa<-AggSubSites(SoilM)
-  }
-SoilM=SoilMa
-thetaM=SoilM$VWC
 
-#New: Make sure integers are integers
-SoilM$Fire_Year<-as.integer(SoilM$Fire_Year_)
+
+#Get dates playing nice
+SoilM$Date <- as.Date(SoilM$TimeStamp,format="%m/%d/%Y")
+SoilM$Year <- 2015+as.numeric(years(SoilM$Date))
+SoilM$Month <- months(SoilM$Date)
+SoilM$DOY <- as.numeric(1+SoilM$Date-as.Date(sprintf('01/01/%i',SoilM$Year),format="%m/%d/%Y"))
+
+#Make sure numbers are numbers
+SoilM$Fire_Year<-as.integer(SoilM$Fire_Year)
 SoilM$Fire_Num<-as.integer(SoilM$Fire_Num)
+SoilM$Fire_Num[SoilM$Fire_Num<0]=0
 #SoilM$SevNum<-as.integer(SoilM$SevNum)
 
 SoilM$Veg73<-as.numeric(SoilM$X1973_veg)
 SoilM$Veg14<-as.numeric(SoilM$X2014_veg)
 
-#VarName='veg12'
+#Get time since fire
+SoilM$Time_Since_Fire <- (SoilM$Year-SoilM$Fire_Year)
+SoilM$Time_Since_Fire[SoilM$Time_Since_Fire>100]=100 #Set max years since fire to 100
+
+
+if (AggData){ #If we decide to use this with SEKI data, need to add Subsites.
+  source("Rfiles/AggSubSites.R")
+  SoilMa<-AggSubSites(SoilM)
+  
+  SoilM=SoilMa
+  thetaM=SoilM$VWC
+}
+
+#VarName='Veg14'
 #plot(SoilMa[,VarName],sqrt(SoilMVar[,VarName]),xlab='Mean',ylab='Std Dev',main=VarName)
 
 
@@ -77,12 +95,13 @@ if(Ghost){
 SoilM_o = SoilM #Hold a copy of original data
 source("Rfiles/AddGhosts.R")
 SoilM<-AddGhosts(SoilM)
-}
+
 thetaM<-SoilM$VWC
+}
 
 if(AggData==0){
-  SiteMeansA<-aggregate(thetaM,list(SoilM$SubSite),mean)
-  SiteMeans<-aggregate(SiteMeansA$x,list(round(SiteMeansA$Group.1)),max)
+  SiteMeansA<-aggregate(thetaM,list(SoilM$Site,SoilM$Veg),mean)
+  SiteMeans<-aggregate(SiteMeansA$x,list(SiteMeansA$Group.1),max)
   SiteCounts<-aggregate(thetaM,list(SoilM$Site),length)
   #SiteMeans<-aggregate(thetaM,list(SoilM$SiteNum),mean)
   #SiteMeans<-aggregate(thetaM,list(SoilM$SiteNum),quantile,.6)
@@ -97,9 +116,15 @@ if(AggData==0){
 GrpVWC<-c(10,25,50,60)
 SoilM$VegChange<-(10*SoilM$Veg73+SoilM$Veg14)
 
+#Calculate topographic wetness index
+SoilM$flow_acc_d[SoilM$flow_acc_d<0]=0 #Replace noData values with zeros
+SoilM$slope_deg[SoilM$slope_deg<0]=0 #Replace noData values with zeros
 
-SiteVeg<-aggregate(SoilM$VegChange,list(SoilM$Site),median)
-GrpVeg<-sort(unique(SiteVeg$x))
+SoilM$TWI.10m<-log(SoilM$flow_acc_d/max(0.0001,tan(SoilM$slope_deg*pi/180)))
+SoilM$TWI.10m[SoilM$TWI.10m<0]=0
+
+#SiteVeg<-aggregate(SoilM$VegChange,list(SoilM$Site),median)
+#GrpVeg<-sort(unique(SiteVeg$x))
 
 SiteMeans$WetCat=1
 SiteMeans$CountCat=0
@@ -110,10 +135,10 @@ for(i in 1:(length(GrpVWC)-1)){
   SiteMeans$CountCat[SiteMeans$x>GrpVWC[i]]<-sum((SiteMeans$x>GrpVWC[i])&(SiteMeans$x<=GrpVWC[i+1]))
 }
 
-hist(SiteMeans$WetCat)
-plot(SiteMeans$WetCat,SiteMeans$x)
-plot(SoilM$VegChange,SoilM$VWC)
-hist(SoilM$SiteNum)
+hist(SiteMeans$WetCat) #Look at how many sites are in each wetness category
+plot(SiteMeans$WetCat,SiteMeans$x) #Look at mean site moisture within each wetness category
+plot(SoilM$VegChange,thetaM,xlim=c(10,70))
+#hist(SoilM$SiteNum)
 
 #Correlation Matrix
 CM=cor(SoilM[,c(12:14,32:43)])
@@ -122,69 +147,62 @@ sum((abs(CM)>.7)&(CM<1))/2
 sum((abs(CM)>.4)&(CM<1))/2
 ((abs(CM)>.4)&(CM<1))
 
-SoilM1<-SoilM[SoilM$Year==2015,c(8:17,20,22,24:25)]
+SoilM1<-SoilM[SoilM$Year==2016,c(12:14,28:37)]
 cor(SoilM1)
 
 
-MayInd<-(SoilM$DOY<=153)
-JunInd<-((SoilM$DOY>153)&(SoilM$DOY<180))
-AugInd<-(SoilM$DOY>180)
+#EarlyInd<-(SoilM$DOY<=160)
+#MidInd<-(SoilM$DOY>170 & SoilM$DOY<190)
+#LateInd<-(SoilM$DOY > 190)
 
 
-
-
-#Look at some veg categories
- unique(SoilM[,c('Veg','VegNum')])
-IndCon=SoilM[,'VegNum']>=3&SoilM[,'VegNum']<4
-IndOpen=SoilM[,'VegNum']==1|SoilM[,'VegNum']==4|SoilM[,'VegNum']==6 #All types of meadows
-IndShrub=SoilM[,'VegNum']<3&SoilM[,'VegNum']>=2
-IndRip=SoilM[,'VegNum']==7|SoilM[,'VegNum']==8
-IndAsp=SoilM[,'VegNum']>=5&SoilM[,'VegNum']<6
-IndPico=SoilM[,'VegNum']==3.4|SoilM[,'VegNum']==3.3
-
-#Test significance of differences
-t.test(SoilM$VWC[((IndCon)&(!IndPico))|IndShrub],SoilM$VWC[IndPico],alternative="l")
-
-
-plot(SoilM[IndCon,'VegNum'],thetaM[IndCon],type='p')
-
-SoilM$SevNum=SoilM$RdNBR_max
-SoilM$SevNum[SoilM$RdNBR_max<69]=0
-SoilM$SevNum[SoilM$RdNBR_max>68]=1
-SoilM$SevNum[SoilM$RdNBR_max>315]=2
-SoilM$SevNum[SoilM$RdNBR_max>640]=3
+SoilM$SevNum=SoilM$Fire_Max_Sev
+#For now: set fire to minimum severity for fires where don't have severity data. 
+SoilM$SevNum[(SoilM$Fire_Max_Sev<0)&SoilM$Fire_Num>0]=1 
+SoilM$SevNum<-as.factor(SoilM$SevNum)
 
 #Add some veg categories based on pre-fire veg.
-SoilM$Veg12b=SoilM$veg12
-SoilM$Veg12b[SoilM$veg12==4]=5
-SoilM$Veg12b[SoilM$VegChange==44]=6 #New wetlands =5, persistent wetlands = 6
-SoilM$Veg12b[SoilM$veg12==5]=7
-SoilM$Veg12b[SoilM$VegChange==55]=8 #New aspen =7, persistent aspen =8
-SoilM$Veg12b[SoilM$veg12==1.5]=2
-SoilM$Veg12b[SoilM$veg12==2]=3
-SoilM$Veg12b[SoilM$veg12==3]=4
+#SoilM$Veg14b=SoilM$Veg14
+#SoilM$Veg14b[SoilM$Veg14==4]=5
+#SoilM$Veg14b[SoilM$VegChange==44]=6 #New wetlands =5, persistent wetlands = 6
+#SoilM$Veg14b[SoilM$Veg14==5]=7
+#SoilM$Veg14b[SoilM$VegChange==55]=8 #New aspen =7, persistent aspen =8
+#SoilM$Veg14b[SoilM$Veg14==1.5]=2
+#SoilM$Veg14b[SoilM$Veg14==2]=3
+#SoilM$Veg14b[SoilM$Veg14==3]=4
 
 
 thetaMs<-sqrt(thetaM)
 
 library(randomForest)
+
+SoilM$VWC<-thetaM
+SoilM<-SoilM[SoilM$VegChange>0] #FOR NOW remove bad data points. Fix data later.
+
+#Set certain values as factors, since order doesn't matter.
+SoilM$Veg14<-as.factor(SoilM$Veg14)
+SoilM$Veg73<-as.factor(SoilM$Veg73)
+SoilM$Year<-as.factor(SoilM$Year)
+
+
 #load('RandomTree_26_04_17_AggSites_NoPICO_NoGhosts.rdata')
 
 #load('SoilM_3_11_16.rdata')
 #load('thetaM_3_11_16.rdata')
 
-thetaM<-SoilM$VWC
+#thetaM<-SoilM$VWC
 
-SoilM$Upslope.Area[SoilM$Upslope.Area>5000]=5000
+SoilM$Upslope.Area<-SoilM$flow_acc_d
+SoilM$Upslope.Area[SoilM$flow_acc_d>5000]=5000
 
-
-SoilM$TimeSevInd<-(1-(SoilM$Time.Since.Fire/100))*(SoilM$SevNum/4)
-TempTPI<-(SoilM$TPI300m-min(SoilM$TPI300m))/(max(SoilM$TPI300m)-min(SoilM$TPI300m))
-TempSlope<-(SoilM$Slope-min(SoilM$Slope))/(max(SoilM$Slope)-min(SoilM$Slope))
-TempArea<-SoilM$Upslope.Area
-TempArea[TempArea>600]=625
-TempArea<-(TempArea-min(SoilM$Upslope.Area))/(625-min(SoilM$Upslope.Area))
-SoilM$TopInd<-.5*TempTPI+.3*TempSlope-0.2*TempArea
+##Un-comment these if want to normalize
+#SoilM$TimeSevInd<-(1-(SoilM$Time.Since.Fire/100))*(SoilM$SevNum/4)
+#TempTPI<-(SoilM$TPI300m-min(SoilM$TPI300m))/(max(SoilM$TPI300m)-min(SoilM$TPI300m))
+#TempSlope<-(SoilM$Slope-min(SoilM$Slope))/(max(SoilM$Slope)-min(SoilM$Slope))
+#TempArea<-SoilM$Upslope.Area
+#TempArea[TempArea>600]=625
+#TempArea<-(TempArea-min(SoilM$Upslope.Area))/(625-min(SoilM$Upslope.Area))
+#SoilM$TopInd<-.5*TempTPI+.3*TempSlope-0.2*TempArea
 #SoilM$TopInd<-(.5*SoilM$TPI300m+.3*SoilM$Slope-0.2*SoilM$Upslope.Area)
 
 
@@ -272,24 +290,24 @@ length(Trny)/length(thetaM) #Proportion of msmts used in training
 #With no "observed" veg, latitude, or longitude:
 
 #No Fire Data:
-#Tfit<-randomForest(VWC~veg12+Year+DOY+Upslope.Area+Slope+Aspect+TPI300m+TWI.10m+Dist.from.River+Elev+veg69,data=SoilM,subset=Trn,nodesize=5,ntree=500)
+#Tfit<-randomForest(VWC~Veg14+Year+DOY+Upslope.Area+Slope+Aspect+TPI300m+TWI.10m+Dist.from.River+Elev+veg69,data=SoilM,subset=Trn,nodesize=5,ntree=500)
 #All Data:
-Tfit<-randomForest(VWC~veg12+Year+DOY+Upslope.Area+Slope+Aspect+TPI300m+TWI.10m+Dist.from.River+Time.Since.Fire+Times.Burned+SevNum+Elev+veg69,data=SoilM,subset=Trn,nodesize=5,ntree=500)
-#NOTE: the best fit uses both veg12 and observed veg, but that can't be upscaled as reliably
-#No veg69, but more groups of veg12:
-#Tfit<-randomForest(VWC~Veg12b+Year+DOY+Upslope.Area+Slope+Aspect+TPI300m+TWI.10m+Dist.from.River+Time.Since.Fire+Times.Burned+SevNum+Elev,data=SoilM,subset=Trn,nodesize=5,ntree=500)
+#NOTE: the best fit uses both Veg14 and observed veg, but that can't be upscaled as reliably
+#No veg69, but more groups of Veg14:
+#Tfit<-randomForest(VWC~Veg14b+Year+DOY+Upslope.Area+Slope+Aspect+TPI300m+TWI.10m+Dist.from.River+Time.Since.Fire+Times.Burned+SevNum+Elev,data=SoilM,subset=Trn,nodesize=5,ntree=500)
 
+Tfit<-randomForest(VWC~Veg+Veg73+Year+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m+TWI.10m+Time_Since_Fire+Fire_Num+SevNum+Elevation,data=SoilM,subset=Trn,nodesize=5,ntree=500)
 
 
 if(g==1 || g==NumSamps){
 plot(Tfit)
 a=partialPlot(x=Tfit,pred.data=SoilM,x.var='TWI.10m',ylab='VWC') #TWI.10m, TPI300m, ='Dist.from.River')
-plot(a$x,.01*a$y,ylim=c(0,.2),lwd=2,xlab='Measurement Day of Year',ylab='Mean VWC',main='Modeled Effect of Variable on VWC',type='l')
+plot(a$x,.01*a$y,ylim=c(0,.2),lwd=2,xlab='TWI',ylab='Mean VWC',main='Modeled Effect of Variable on VWC',type='l')
 points(a$x,.01*a$y)
 lf<-lm(.01*a$y~a$x)
 lines(c(0,14),lf$coefficients[1]+lf$coefficients[2]*c(0,14))
 
-a=partialPlot(x=Tfit,pred.data=SoilM,x.var='veg12',ylab='VWC')
+a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Veg14',ylab='VWC')
 barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
 }
 
@@ -367,8 +385,8 @@ t.test(YearMeanVWC[3,],YearMeanVWC[1,])
 #Should I add error bars to all these graphs, or just state differences? Error bars might get complicated with variables that have lots of possible values (unlike year, which only has 3).
 
 #Model using full dataset
-Tfit<-randomForest(VWC~veg12+Year+DOY+Upslope.Area+Slope+Aspect+TPI300m+TWI.10m+Dist.from.River+Time.Since.Fire+Times.Burned+SevNum+Elev+veg69,data=SoilM,importance=TRUE,importanceSD=TRUE,nodesize=5,ntree=500)
-#save(Tfit,file='RandomTree_04_11_15_7veg_tst25.rdata')
+#Note: Latitude and Longitude show high importance, but they're also highly correlated with elevation, so maybe shouldn't include?
+Tfit<-randomForest(VWC~LatPoint+LonPoint+Veg+Veg73+Year+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m+TWI.10m+Time_Since_Fire+Fire_Num+SevNum+Elevation,data=SoilM,nodesize=5,ntree=500)#save(Tfit,file='RandomTree_04_11_15_7veg_tst25.rdata')
 imp<-Tfit$importance
 impSE<-Tfit$importanceSD
 barplot(xlab='Variable',ylab='Importance',names.arg=rownames(imp)[order(imp[, 1], decreasing=TRUE)],height=imp[order(imp[, 1], decreasing=TRUE),1],cex.names=.5)
@@ -411,7 +429,7 @@ CoordVeg[1:4,]
 
 Veg97det<-readGDAL('../GPSstuff/cl_vegdetail_ProjectRaster_C1.tif') #Use this to change "Conifer Reproduction" from Shrub type
 #WGSmap<-readGDAL('../GPSstuff/clip_10m_WGS') #Something wrong. Too big
-VegEcogmap<-readGDAL('../GPSstuff/clip_veg12_ICB.tif')   #veg2012_NAIP_rast10m.tif') 
+VegEcogmap<-readGDAL('../GPSstuff/clip_Veg14_ICB.tif')   #veg2012_NAIP_rast10m.tif') 
 Veg69map<-readGDAL('../GPSstuff/clip_veg69_ICB.tif') 
 
 VegMorig=as.matrix(Veg97map)
@@ -478,11 +496,11 @@ BigSoilM<-BigSoilX  #For keeping original values
 
 veg69num<-as.matrix(Veg69map)
 BigSoilM$veg69<-veg69num[ICB_Ind]
-veg12num<-as.matrix(VegEcogmap)
-BigSoilM$veg12<-veg12num[ICB_Ind]
+Veg14num<-as.matrix(VegEcogmap)
+BigSoilM$Veg14<-Veg14num[ICB_Ind]
 BigSoilM$veg69[BigSoilM$veg69>6]=NaN
-BigSoilM$veg12[BigSoilM$veg12>6]=NaN
-BigSoilM$veg12[(BigSoilM$veg12==1) & (VegMorig$VegMorig==12)]=1.5
+BigSoilM$Veg14[BigSoilM$Veg14>6]=NaN
+BigSoilM$Veg14[(BigSoilM$Veg14==1) & (VegMorig$VegMorig==12)]=1.5
 
 DEM10m<-readGDAL('../GPSstuff/Clip_10mDEM_L')  #<-Lidar DEM  ('../GPSstuff/Clip_10mDEM')
   DEM10mM<-as.matrix(DEM10m)
@@ -612,18 +630,18 @@ ModYear=1970
 BigSoilM$VegNum<-as.numeric(BigSoilM$VegNum)
 Veg97temp<-BigSoilM$VegNum
 
-BigSoilM$VegChange=(10*BigSoilM$veg69+BigSoilM$veg12)
+BigSoilM$VegChange=(10*BigSoilM$veg69+BigSoilM$Veg14)
 
-BigSoilM$Veg12b=BigSoilM$veg12
-BigSoilM$Veg12b[BigSoilM$veg12==4]=5
-BigSoilM$Veg12b[BigSoilM$VegChange==44]=6 #New wetlands =5, persistent wetlands = 6
-BigSoilM$Veg12b[BigSoilM$veg12==5]=7
-BigSoilM$Veg12b[BigSoilM$VegChange==55]=8 #New aspen =7, persistent aspen =8
-BigSoilM$Veg12b[BigSoilM$veg12==1.5]=2
-BigSoilM$Veg12b[BigSoilM$veg12==2]=3
-BigSoilM$Veg12b[BigSoilM$veg12==3]=4
+BigSoilM$Veg14b=BigSoilM$Veg14
+BigSoilM$Veg14b[BigSoilM$Veg14==4]=5
+BigSoilM$Veg14b[BigSoilM$VegChange==44]=6 #New wetlands =5, persistent wetlands = 6
+BigSoilM$Veg14b[BigSoilM$Veg14==5]=7
+BigSoilM$Veg14b[BigSoilM$VegChange==55]=8 #New aspen =7, persistent aspen =8
+BigSoilM$Veg14b[BigSoilM$Veg14==1.5]=2
+BigSoilM$Veg14b[BigSoilM$Veg14==2]=3
+BigSoilM$Veg14b[BigSoilM$Veg14==3]=4
 
-if(PICOsep<1){BigSoilM$veg12[BigSoilM$veg12==1.5]=1}
+if(PICOsep<1){BigSoilM$Veg14[BigSoilM$Veg14==1.5]=1}
 
 if(ModYear<1974){
 #For 1969 scenario: 
@@ -632,23 +650,23 @@ if(ModYear<1974){
  BigSoilM$Times.Burned<-0*BigSoilM$Slope
  BigSoilM$Time.Since.Fire=100
  
- BigSoilM$veg12=BigSoilM$veg69 #veg12 is really "current veg"
- if(PICOsep){BigSoilM$veg12[VegMorig$VegMorig==12 & BigSoilM$veg69==1]=1.5}
+ BigSoilM$Veg14=BigSoilM$veg69 #Veg14 is really "current veg"
+ if(PICOsep){BigSoilM$Veg14[VegMorig$VegMorig==12 & BigSoilM$veg69==1]=1.5}
 
  BigSoilM$DOY=160 #This should be altered for any year
  BigSoilM$TPI300m[BigSoilM$TPI300m>60]=60#This should be altered for any year
  BigSoilM$TPI300m[BigSoilM$TPI300m<(-60)]=-60
  BigSoilM$Dist.from.River[BigSoilM$Dist.from.River>500]=500#This should be altered for any year
 
- BigSoilM$Veg12b=BigSoilM$veg12
- BigSoilM$Veg12b=BigSoilM$veg12
- BigSoilM$Veg12b[BigSoilM$veg12==4]=6
- #BigSoilM$Veg12b[BigSoilM$VegChange==44]=6 #New wetlands =5, persistent wetlands = 6
- BigSoilM$Veg12b[BigSoilM$veg12==5]=7
- BigSoilM$Veg12b[BigSoilM$VegChange==55]=8 #New aspen =7, persistent aspen =8
- BigSoilM$Veg12b[BigSoilM$veg12==1.5]=2
- BigSoilM$Veg12b[BigSoilM$veg12==2]=3
- BigSoilM$Veg12b[BigSoilM$veg12==3]=4
+ BigSoilM$Veg14b=BigSoilM$Veg14
+ BigSoilM$Veg14b=BigSoilM$Veg14
+ BigSoilM$Veg14b[BigSoilM$Veg14==4]=6
+ #BigSoilM$Veg14b[BigSoilM$VegChange==44]=6 #New wetlands =5, persistent wetlands = 6
+ BigSoilM$Veg14b[BigSoilM$Veg14==5]=7
+ BigSoilM$Veg14b[BigSoilM$VegChange==55]=8 #New aspen =7, persistent aspen =8
+ BigSoilM$Veg14b[BigSoilM$Veg14==1.5]=2
+ BigSoilM$Veg14b[BigSoilM$Veg14==2]=3
+ BigSoilM$Veg14b[BigSoilM$Veg14==3]=4
  
  }
 if(ModYear==1997){
@@ -682,7 +700,7 @@ if(ModYear==1997){
 if((ModYear>2011)&(ModYear<2017))
 {
 BigSoilM$Year=ModYear
-#BigSoilM$veg12[is.na(Veg97temp)]=NaN #Block out cells outside of ICB
+#BigSoilM$Veg14[is.na(Veg97temp)]=NaN #Block out cells outside of ICB
 BigSoilM$DOY=220 #This should be altered for any year
 BigSoilM$Time.Since.Fire=BigSoilM$Time.Since.Fire+(ModYear-2014)
 #BigSoilM$TPI300m<-as.numeric(BigSoilM$TPI300m)
@@ -718,7 +736,7 @@ if(ModYear==2020){
 #XgoodCoords<-XYvals[!is.na(BigSoilX$VegNum)&as.numeric(BigSoilX$VegNum)>0,]
 
 
-AllwaysVeg<-(!is.na(BigSoilM$veg12)&(BigSoilM$veg12>0)&!is.na(BigSoilM$veg69)&(BigSoilM$veg69>0))
+AllwaysVeg<-(!is.na(BigSoilM$Veg14)&(BigSoilM$Veg14>0)&!is.na(BigSoilM$veg69)&(BigSoilM$veg69>0))
 
 Xgood=BigSoilM[AllwaysVeg,]
 #Xgood$VegNum<-as.numeric(Xgood$VegNum)
@@ -753,18 +771,18 @@ plot(XgoodCoords[ToPredict,1],XgoodCoords[ToPredict,2],col=round(thetaMod*nclrs/
 XYpred<-XgoodCoords[ToPredict,]
 LonPred=XYpred[,1]
 LatPred=XYpred[,2]
-Veg12Pred=Xgood$veg12[ToPredict]
+Veg14Pred=Xgood$Veg14[ToPredict]
 Veg69Pred=Xgood$veg69[ToPredict]
 TWIPred=Xgood$TWI.10m[ToPredict]
 SevPred=Xgood$SevNum[ToPredict]
 SlpPred=Xgood$Slope[ToPredict]
 ElevPred=Xgood$Elev[ToPredict]
-save(Veg12Pred,file='ModeledVWC/SubSiteMeans/Veg12pred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
-save(Veg69Pred,file='ModeledVWC/SubSiteMeans/Veg69pred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
-save(LonPred,file='ModeledVWC/SubSiteMeans/Lonpred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
-save(LatPred,file='ModeledVWC/SubSiteMeans/Latpred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
-save(TWIPred,file='ModeledVWC/SubSiteMeans/TWIpred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
-save(thetaMod,file='ModeledVWC/SubSiteMeans/VWCpred_Y1970D160_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
+#save(Veg14Pred,file='ModeledVWC/SubSiteMeans/Veg14pred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
+#save(Veg69Pred,file='ModeledVWC/SubSiteMeans/Veg69pred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
+#save(LonPred,file='ModeledVWC/SubSiteMeans/Lonpred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
+#save(LatPred,file='ModeledVWC/SubSiteMeans/Latpred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
+#save(TWIPred,file='ModeledVWC/SubSiteMeans/TWIpred_Y2014D220_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
+#save(thetaMod,file='ModeledVWC/SubSiteMeans/VWCpred_Y1970D160_clim2014_RandForest_04_26_17_NoPICO_NoGhost',ascii=TRUE)
 
 
 
