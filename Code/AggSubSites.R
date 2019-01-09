@@ -2,8 +2,8 @@ AggSubSites <- function(SoilM){
   AggList=list(SoilM$Site,SoilM$SubSite,SoilM$Trip,SoilM$Veg)
   #AggList=list(SoilM$Site,SoilM$Year,SoilM$DOY,SoilM$veg12,SoilM$veg69)
 
-  SoilMa=aggregate(SoilM[,c(12:14,30:35,39:40)],by=AggList,FUN="mean")
-  SoilMa2=aggregate(SoilM[,c(28:29,36:38,41:47)],by=AggList,FUN="median") #Get values that must be integers
+  SoilMa=aggregate(SoilM[,c(12:14,30:34,40:41)],by=AggList,FUN="mean")
+  SoilMa2=aggregate(SoilM[,c(28:29,35:38,42:48)],by=AggList,FUN="median") #Get values that must be integers
 
   CountIn=aggregate(SoilM[,'Soil_Sat'],by=AggList,length)
   SoilMa$Count=CountIn$x
@@ -15,7 +15,7 @@ AggSubSites <- function(SoilM){
   
   
   SoilMa=cbind(SoilMa,SoilMa2)
-  SoilMVar=aggregate(SoilM[,c(12:14,30:35,39:40)],by=AggList,FUN="var")
+  SoilMVar=aggregate(SoilM[,c(12:14,30:34,40:41)],by=AggList,FUN="var")
   #SoilMse=sqrt(SoilMVar$VWC)/sqrt(CountIn$x)     #Standard Error
   #plot(SoilMa$VWC,SoilMse)
   
