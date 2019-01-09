@@ -1,12 +1,12 @@
 #Created by Gabrielle Boisrame
 #Train models using measured soil moisture
 
+setwd("~/GitHub/FireWater/SEKI_Imagery_Analysis/Code")
+
+
 AggData=1 #For grouping measurements that are the same veg type at the same site
-<<<<<<< HEAD
 Ghost=1   #For adding in "ghost" measurements to counteract effects of missing data
-=======
 Ghost=0  #For adding in "ghost" measurements to counteract effects of missing data
->>>>>>> 7d9a20838277ad6f741842053edac7bdd4a7cc1c
 PICOsep=0  #For separating PICO from other conifers
 
 library(nlme) # fit regression w/ spatially correlated errors
@@ -28,11 +28,9 @@ SoilM <- read.csv('../Raw Data/Soil Moisture/SoilMoisture_SEKI_Combined_GISextra
 #SoilM<-SoilM[SoilM$DOY>180,] #Late Summer
 #SoilM<-SoilM[(SoilM$DOY>153)&(SoilM$DOY<180),] #June
 
-<<<<<<< HEAD
 SoilM <-SoilM[SoilM$Site!='Calibration'] #Remove a few calibration points
-=======
+
 SoilM <-SoilM[SoilM$Site!='Calibration',] #Remove a few calibration points
->>>>>>> 7d9a20838277ad6f741842053edac7bdd4a7cc1c
 
 
 thetaM <- as.numeric(SoilM$Soil_Sat)
@@ -77,19 +75,18 @@ SoilM$Time_Since_Fire[SoilM$Time_Since_Fire>100]=100 #Set max years since fire t
 
 
 if (AggData){ #If we decide to use this with SEKI data, need to add Subsites.
-<<<<<<< HEAD
-  source("Rfiles/AggSubSites.R")
+
+  source("AggSubSites.R")
   SoilMa<-AggSubSites(SoilM)
   
   SoilM=SoilMa
   thetaM=SoilM$VWC
-=======
+
   source("AggSubSites.R")
   SoilMa<-AggSubSites(SoilM)
   
   SoilM=SoilMa
   thetaM=SoilM$Soil_Sat
->>>>>>> 7d9a20838277ad6f741842053edac7bdd4a7cc1c
 }
 
 #VarName='Veg14'
@@ -112,11 +109,10 @@ SoilM_o = SoilM #Hold a copy of original data
 source("AddGhosts.R")
 SoilM<-AddGhosts(SoilM)
 
-<<<<<<< HEAD
 thetaM<-SoilM$VWC
-=======
+
 thetaM<-SoilM$Soil_Sat
->>>>>>> 7d9a20838277ad6f741842053edac7bdd4a7cc1c
+
 }
 
 if(AggData==0){
@@ -167,11 +163,11 @@ sum((abs(CM)>.7)&(CM<1))/2
 sum((abs(CM)>.4)&(CM<1))/2
 ((abs(CM)>.4)&(CM<1))
 
-<<<<<<< HEAD
-SoilM1<-SoilM[SoilM$Year==2016,c(12:14,28:37)]
-=======
-SoilM1<-SoilM[SoilM$Year==2016,c(12:14,32:43)]
->>>>>>> 7d9a20838277ad6f741842053edac7bdd4a7cc1c
+
+#SoilM1<-SoilM[SoilM$Year==2016,c(12:14,28:38)]
+
+#SoilM1<-SoilM[SoilM$Year==2016,c(12:14,32:43)]
+
 cor(SoilM1)
 
 
@@ -201,11 +197,11 @@ thetaMs<-sqrt(thetaM)
 library(randomForest)
 
 SoilM$VWC<-thetaM
-<<<<<<< HEAD
+
 SoilM<-SoilM[SoilM$VegChange>0] #FOR NOW remove bad data points. Fix data later.
-=======
+
 #SoilM<-SoilM[SoilM$VegChange>0] #FOR NOW remove bad data points. Fix data later.
->>>>>>> 7d9a20838277ad6f741842053edac7bdd4a7cc1c
+
 
 #Set certain values as factors, since order doesn't matter.
 SoilM$Veg14<-as.factor(SoilM$Veg14)
