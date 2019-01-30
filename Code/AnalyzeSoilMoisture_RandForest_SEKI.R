@@ -234,12 +234,22 @@ a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Veg',ylab='VWC')
 barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
 
 #Separate by trip and veg
-TripVegMat<-data.frame()
-a=partialPlot(x=Tfit,pred.data=SoilM[SoilM$Year==2016 & SoilM$DOY<190],x.var='Veg',ylab='VWC')
-barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
-
-
-
+TripVegMat<-data.frame(cbind(Year=c(2016,2016,2017,2017,2018),Trip=c(1,2,1,2,1)),DenseMeadow=c(1:5),MixCon=c(1:5),Shrub=c(1:5),Sparse=c(1:5))
+SoilMpred<-SoilM[,5:53]
+SoilMpred$DOY<-180
+SoilMpred$Year<-2016
+SoilMpred<-unique(SoilMpred) #DOESNT WORK. I THINK BECAUSE TIME SINCE FIRE IS TIED TO YEAR
+for (i in 1:5){
+ Yr<-TripVegMat$Year[i] 
+ Trp<-TripVegMat$Trip[i]
+ if(Trp==1){Dt<-(SoilM$DOY<190)}else{Dt<-SoilM$DOY>190}
+#NEED TO PICK A DIFFERENT METHOD TO SHOW MEAN OVER ALL SITES, NOT JUST THE ONES MEASUReD THAT YEAR
+a=partialPlot(x=Tfit,pred.data=SoilM[SoilM$Year==Yr & Dt,],x.var='Veg',ylab='VWC')
+#barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
+a$x
+TripVegMat[i,3:6]<-.01*a$y
+}
+barplot(as.matrix(TripVegMat[,3:6]),beside=TRUE,ylab='VWC')
 
 #Select random training points from all points:
 #nt=round(length(thetaM)/4)
