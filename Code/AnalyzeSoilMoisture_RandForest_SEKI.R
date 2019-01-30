@@ -3,8 +3,8 @@
 
 #Be sure to set the working directory to this source file's location
 
-AggData=1 #For grouping measurements that are the same veg type at the same site
-Ghost=1   #For adding in "ghost" measurements to counteract effects of missing data
+AggData=0 #For grouping measurements that are the same veg type at the same site
+Ghost=0   #For adding in "ghost" measurements to counteract effects of missing data
 PICOsep=0  #For separating PICO from other conifers
 
 library(nlme) # fit regression w/ spatially correlated errors
@@ -26,7 +26,6 @@ SoilM <- read.csv('../Raw Data/Soil Moisture/SoilMoisture_SEKI_Combined_GISextra
 #SoilM<-SoilM[SoilM$DOY>180,] #Late Summer
 #SoilM<-SoilM[(SoilM$DOY>153)&(SoilM$DOY<180),] #June
 
-SoilM <-SoilM[SoilM$Site!='Calibration'] #Remove a few calibration points
 
 SoilM <-SoilM[SoilM$Site!='Calibration',] #Remove a few calibration points
 
@@ -226,6 +225,19 @@ SoilM$Upslope.Area[SoilM$flow_acc_d>5000]=5000
 #TempArea<-(TempArea-min(SoilM$Upslope.Area))/(625-min(SoilM$Upslope.Area))
 #SoilM$TopInd<-.5*TempTPI+.3*TempSlope-0.2*TempArea
 #SoilM$TopInd<-(.5*SoilM$TPI300m+.3*SoilM$Slope-0.2*SoilM$Upslope.Area)
+
+
+Tfit<-randomForest(VWC~Veg+Veg73+Year+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m+TWI.10m+Time_Since_Fire+Fire_Num+SevNum+Elevation,data=SoilM,nodesize=5,ntree=500)
+
+
+a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Veg',ylab='VWC')
+barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
+
+#Separate by trip and veg
+TripVegMat<-data.frame()
+a=partialPlot(x=Tfit,pred.data=SoilM[SoilM$Year==2016 & SoilM$DOY<190],x.var='Veg',ylab='VWC')
+barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
+
 
 
 
