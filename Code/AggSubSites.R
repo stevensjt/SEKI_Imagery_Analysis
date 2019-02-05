@@ -3,7 +3,8 @@ AggSubSites <- function(SoilM){
   #AggList=list(SoilM$Site,SoilM$Year,SoilM$DOY,SoilM$veg12,SoilM$veg69)
 
   SoilMa=aggregate(SoilM[,c(12:14,30:34,40:41)],by=AggList,FUN="mean")
-  SoilMa2=aggregate(SoilM[,c(28:29,35:38,42:48)],by=AggList,FUN="median") #Get values that must be integers
+  SoilMa2=aggregate(SoilM[,c(28:29,35:38,43,45:48)],by=AggList,FUN="median") #Get values that must be integers
+  SoilMa2$Trip<-SoilMa2$Group.3
 
   CountIn=aggregate(SoilM[,'Soil_Sat'],by=AggList,length)
   SoilMa$Count=CountIn$x

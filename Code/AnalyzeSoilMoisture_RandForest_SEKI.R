@@ -3,7 +3,7 @@
 
 #Be sure to set the working directory to this source file's location
 
-AggData=0 #For grouping measurements that are the same veg type at the same site
+AggData=1 #For grouping measurements that are the same veg type at the same site
 Ghost=0   #For adding in "ghost" measurements to counteract effects of missing data
 PICOsep=0  #For separating PICO from other conifers
 
@@ -72,12 +72,6 @@ SoilM$Time_Since_Fire[SoilM$Time_Since_Fire>100]=100 #Set max years since fire t
 
 
 if (AggData){ #If we decide to use this with SEKI data, need to add Subsites.
-
-  source("AggSubSites.R")
-  SoilMa<-AggSubSites(SoilM)
-  
-  SoilM=SoilMa
-  thetaM=SoilM$VWC
 
   source("AggSubSites.R")
   SoilMa<-AggSubSites(SoilM)
@@ -206,7 +200,9 @@ SoilM$Veg73<-as.factor(SoilM$Veg73)
 SoilM$Year<-as.factor(SoilM$Year)
 
 
-#load('RandomTree_26_04_17_AggSites_NoPICO_NoGhosts.rdata')
+#load('ICB_RandomTree_26_04_17_AggSites_NoPICO_NoGhosts.rdata')
+#load('ICB_RandomForest_16_03_17_SubSiteMeans.rdata')
+Tfit_ICB<-Tfit
 
 #load('SoilM_3_11_16.rdata')
 #load('thetaM_3_11_16.rdata')
@@ -229,6 +225,7 @@ SoilM$Upslope.Area[SoilM$flow_acc_d>5000]=5000
 
 Tfit<-randomForest(VWC~Veg+Veg73+Year+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m+TWI.10m+Time_Since_Fire+Fire_Num+SevNum+Elevation,data=SoilM,nodesize=5,ntree=500)
 
+
 imp=Tfit$importance
 barplot(xlab='Variable',ylab='Importance',names.arg=rownames(imp)[order(imp[, 1], decreasing=TRUE)],height=imp[order(imp[, 1], decreasing=TRUE),1],cex.names=.5)
 
@@ -237,7 +234,7 @@ barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main
 
 #Separate by trip and veg
 TripVegMat<-data.frame(cbind(Year=as.factor(c(2016,2016,2017,2017,2018)),Trip=c(1,2,1,2,1)),DenseMeadow=c(1:5),MixCon=c(1:5),Shrub=c(1:5),Sparse=c(1:5))
-SoilMpred<-SoilM[,5:53]
+if(AggData){SoilMpred<-SoilM}else{SoilMpred<-SoilM[,5:53]}
 SoilMpred<-SoilMpred[SoilMpred$Trip=='2017_Early',]
 TempFrYrs<-(SoilMpred$Time_Since_Fire-1)
 Yrs<-unique(SoilM$Year)
@@ -261,6 +258,52 @@ TripVegMat[i,3:6]<-.01*a$y
 }
 barplot(as.matrix(TripVegMat[,3:6]),beside=TRUE,ylab='Mean Soil Moisture (VWC)',legend.text=c("June 2016","July 2016","June 2017","July 2017","June 2018"))
 
+
+#Compare models from ICB and Sugarloaf
+
+SoilM_match<-SoilM
+SoilM_match$veg12<-SoilM$X2014_veg
+ SoilM_match$veg12[SoilM$Veg=='dense meadow']=4
+ SoilM_match$veg12[SoilM$Veg=='sparse meadow']=3
+ SoilM_match$veg12[SoilM$Veg=='mixed conifer']=1
+ SoilM_match$veg12[SoilM$Veg=='shrub']=2
+#SoilM_match$veg12<-SoilM$X2014_veg
+# SoilM_match$veg12[SoilM$X2014_veg==6]=4
+# SoilM_match$veg12[SoilM$X2014_veg==1]=2
+# SoilM_match$veg12[SoilM$X2014_veg==4]=1
+# SoilM_match$veg12[SoilM$X2014_veg==2]=3
+SoilM_match$veg69<-SoilM$X1973_veg
+ SoilM_match$veg69[SoilM$X1973_veg==6]=4
+ SoilM_match$veg69[SoilM$X1973_veg==1]=2
+ SoilM_match$veg69[SoilM$X1973_veg==4]=1
+ SoilM_match$veg69[SoilM$X1973_veg==2]=3
+SoilM_match$Slope<-SoilM$slope_deg
+SoilM_match$TPI300m<-SoilM$tpi_300m
+SoilM_match$Dist.from.River<-(400-(SoilM$TWI.10m*35)) #FOR NOW using an index created from TWI bc don't have river map.Doesn't alter results much.
+SoilM_match$Time.Since.Fire<-SoilM$Time_Since_Fire
+SoilM_match$Times.Burned<-SoilM$Fire_Num
+#SoilM_match$Times.Burned<-as.factor(SoilM$Fire_Num)
+SoilM_match$Elev<-SoilM$Elevation
+SoilM_match<-SoilM_match[SoilM_match$Year==2016,]
+SoilM_match<-SoilM_match[SoilM_match$veg12>0,]
+#SoilM_match$veg12<-factor(SoilM_match$veg12,levels=c(1:5))
+#SoilM_match$veg69<-factor(SoilM_match$veg69,levels=c(1:5))
+#SoilM_match$Year<-factor(SoilM_match$Year,levels=c(2014,2015,2016))
+SoilM_match$Year<-as.numeric(SoilM_match$Year)
+SoilM_match$SevNum<-as.numeric(SoilM_match$SevNum)
+
+VWCpred_ICB<-predict(Tfit_ICB,SoilM_match)
+
+VWCpred_SL<-predict(Tfit,SoilM[SoilM$Year==2016,])
+plot(SoilM$VWC[SoilM$Year==2016],VWCpred_SL,xlab='Measured SCB Moisture',ylab='Modeled')
+lines(c(0,55),c(0,55),col='grey')
+points(SoilM_match$VWC,VWCpred_ICB,col='red')
+legend('bottomright',c('SCB Model','ICB Model'),col=c('black','red'),pch=1)
+
+cor(SoilM$VWC[SoilM$Year==2016],VWCpred_SL)
+cor(SoilM_match$VWC,VWCpred_ICB)
+  
+  
 #Select random training points from all points:
 #nt=round(length(thetaM)/4)
 #Trn<-sample(1:length(thetaM),nt*3,replace=FALSE)
