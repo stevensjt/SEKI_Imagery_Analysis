@@ -202,7 +202,7 @@ SoilM$Year<-as.factor(SoilM$Year)
 
 #load('ICB_RandomTree_26_04_17_AggSites_NoPICO_NoGhosts.rdata')
 #load('ICB_RandomForest_16_03_17_SubSiteMeans.rdata')
-Tfit_ICB<-Tfit
+#Tfit_ICB<-Tfit
 
 #load('SoilM_3_11_16.rdata')
 #load('thetaM_3_11_16.rdata')
@@ -222,15 +222,15 @@ SoilM$Upslope.Area[SoilM$flow_acc_d>5000]=5000
 #SoilM$TopInd<-.5*TempTPI+.3*TempSlope-0.2*TempArea
 #SoilM$TopInd<-(.5*SoilM$TPI300m+.3*SoilM$Slope-0.2*SoilM$Upslope.Area)
 
-
-Tfit<-randomForest(VWC~Veg+Veg73+Year+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m+TWI.10m+Time_Since_Fire+Fire_Num+SevNum+Elevation,data=SoilM,nodesize=5,ntree=500)
+sum(is.na(SoilM$Dist_From_River))
+Tfit<-randomForest(VWC~Veg+Veg73+Year+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m+TWI.10m+Time_Since_Fire+Fire_Num+SevNum+Elevation+Dist_From_River,data=SoilM,nodesize=5,ntree=500)
 
 
 imp=Tfit$importance
 barplot(xlab='Variable',ylab='Importance',names.arg=rownames(imp)[order(imp[, 1], decreasing=TRUE)],height=imp[order(imp[, 1], decreasing=TRUE),1],cex.names=.5)
 
 a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Veg',ylab='VWC')
-barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
+#barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
 
 #Separate by trip and veg
 TripVegMat<-data.frame(cbind(Year=as.factor(c(2016,2016,2017,2017,2018)),Trip=c(1,2,1,2,1)),DenseMeadow=c(1:5),MixCon=c(1:5),Shrub=c(1:5),Sparse=c(1:5))
