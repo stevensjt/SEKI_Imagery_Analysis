@@ -148,7 +148,10 @@ plot(SoilM$VegChange,thetaM,xlim=c(10,70))
 #hist(SoilM$SiteNum)
 
 #Correlation Matrix
-CM=cor(SoilM[,c(12:14,32:43)])
+if(AggData){
+  CM=cor(SoilM[,c(5:15,26:34,37)])
+}else{
+CM=cor(SoilM[,c(12:14,32:43)])}
 .01*round(CM*100)
 sum((abs(CM)>.7)&(CM<1))/2
 sum((abs(CM)>.4)&(CM<1))/2
@@ -202,7 +205,8 @@ SoilM$Year<-as.factor(SoilM$Year)
 
 #load('ICB_RandomTree_26_04_17_AggSites_NoPICO_NoGhosts.rdata')
 #load('ICB_RandomForest_16_03_17_SubSiteMeans.rdata')
-#Tfit_ICB<-Tfit
+load('ICB_RandomForest_2019_03_01_AggData.rdata')
+Tfit_ICB<-Tfit
 
 #load('SoilM_3_11_16.rdata')
 #load('thetaM_3_11_16.rdata')
@@ -279,31 +283,37 @@ SoilM_match$veg69<-SoilM$X1973_veg
  SoilM_match$veg69[SoilM$X1973_veg==2]=3
 SoilM_match$Slope<-SoilM$slope_deg
 SoilM_match$TPI300m<-SoilM$tpi_300m
-SoilM_match$Dist.from.River<-(400-(SoilM$TWI.10m*35)) #FOR NOW using an index created from TWI bc don't have river map.Doesn't alter results much.
+SoilM_match$Dist.from.River<-SoilM_match$Dist_From_River
 SoilM_match$Time.Since.Fire<-SoilM$Time_Since_Fire
-SoilM_match$Times.Burned<-SoilM$Fire_Num
-#SoilM_match$Times.Burned<-as.factor(SoilM$Fire_Num)
+#SoilM_match$Times.Burned<-SoilM$Fire_Num
+SoilM_match$Times.Burned<-as.factor(SoilM_match$Fire_Num)
 SoilM_match$Elev<-SoilM$Elevation
-SoilM_match<-SoilM_match[SoilM_match$Year==2016,]
+#SoilM_match<-SoilM_match[SoilM_match$Year==2016,]
 SoilM_match<-SoilM_match[SoilM_match$veg12>0,]
-#SoilM_match$veg12<-factor(SoilM_match$veg12,levels=c(1:5))
-#SoilM_match$veg69<-factor(SoilM_match$veg69,levels=c(1:5))
-#SoilM_match$Year<-factor(SoilM_match$Year,levels=c(2014,2015,2016))
-SoilM_match$Year<-as.numeric(SoilM_match$Year)
+SoilM_match$veg12<-factor(SoilM_match$veg12,levels=c(1:5))
+SoilM_match$veg69<-factor(SoilM_match$veg69,levels=c(1:5))
+SoilM_match$Year<-factor(SoilM_match$Year,levels=c(2014:2018))
+#SoilM_match$Year<-as.numeric(SoilM_match$Year)
 SoilM_match$SevNum<-as.numeric(SoilM_match$SevNum)
+SoilM_match$SevNum<-(SoilM_match$SevNum-2)
+SoilM_match$SevNum[SoilM_match$SevNum<0]<-0
+SoilM_match$SevNum<-as.factor(SoilM_match$SevNum)
 
 VWCpred_ICB<-predict(Tfit_ICB,SoilM_match)
 
-VWCpred_SL<-predict(Tfit,SoilM[SoilM$Year==2016,])
-plot(SoilM$VWC[SoilM$Year==2016],VWCpred_SL,xlab='Measured SCB Moisture',ylab='Modeled')
+VWCpred_SL<-predict(Tfit,SoilM)
+plot(SoilM$VWC,VWCpred_SL,xlab='Measured SCB Moisture',ylab='Modeled')
 lines(c(0,55),c(0,55),col='grey')
 points(SoilM_match$VWC,VWCpred_ICB,col='red')
 legend('bottomright',c('SCB Model','ICB Model'),col=c('black','red'),pch=1)
 
-cor(SoilM$VWC[SoilM$Year==2016],VWCpred_SL)
+cor(SoilM$VWC,VWCpred_SL)
 cor(SoilM_match$VWC,VWCpred_ICB)
   
+hist(VWCpred_SL-SoilM$VWC,col=rgb(0,0,0,.5),main='Model Error',alpha=.5,xlim=c(-40,40),xlab='Modeled-Measured')
+hist(VWCpred_ICB-SoilM_match$VWC,col=rgb(1,0,0,.5),add=TRUE)  
   
+
 #Select random training points from all points:
 #nt=round(length(thetaM)/4)
 #Trn<-sample(1:length(thetaM),nt*3,replace=FALSE)
