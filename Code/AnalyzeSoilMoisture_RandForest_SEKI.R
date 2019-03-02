@@ -403,7 +403,7 @@ length(Trny)/length(thetaM) #Proportion of msmts used in training
 #No veg69, but more groups of Veg14:
 #Tfit<-randomForest(VWC~Veg14b+Year+DOY+Upslope.Area+Slope+Aspect+TPI300m+TWI.10m+Dist.from.River+Time.Since.Fire+Times.Burned+SevNum+Elev,data=SoilM,subset=Trn,nodesize=5,ntree=500)
 
-Tfit<-randomForest(VWC~Veg+Veg73+Year+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m+TWI.10m+Time_Since_Fire+Fire_Num+SevNum+Elevation,data=SoilM,subset=Trn,nodesize=5,ntree=500)
+Tfit<-randomForest(VWC~Veg+Veg73+Year+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m+TWI.10m+Time_Since_Fire+Fire_Num+SevNum+Elevation+Dist_From_River,data=SoilM,subset=Trn,nodesize=5,ntree=500)
 
 
 if(g==1 || g==NumSamps){
