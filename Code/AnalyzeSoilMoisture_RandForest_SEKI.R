@@ -9,16 +9,16 @@ PICOsep=0  #For separating PICO from other conifers
 
 library(nlme) # fit regression w/ spatially correlated errors
 library(chron)
-#library(gstat) # classical geostatistics
-#library(MASS)
-#library(timeSeries)
-#library(sp)
-#library(matrixStats)
-#library(Hmisc)
-#library(plyr)
-#library(xts)
-#library(hydroGOF)
-#library(tiff)
+library(gstat) # classical geostatistics
+library(MASS)
+library(timeSeries)
+library(sp)
+library(matrixStats)
+library(Hmisc)
+library(plyr)
+library(xts)
+library(hydroGOF)
+library(tiff)
 
 #Load data
 SoilM <- read.csv('../Raw Data/Soil Moisture/SoilMoisture_SEKI_Combined_GISextract.csv',header=TRUE)    #('SoilMoistureMATLAB_All_10_02_15.csv')
@@ -71,7 +71,7 @@ SoilM$Time_Since_Fire <- (SoilM$Year-SoilM$Fire_Year)
 SoilM$Time_Since_Fire[SoilM$Time_Since_Fire>100]=100 #Set max years since fire to 100
 
 
-if (AggData){ #If we decide to use this with SEKI data, need to add Subsites.
+if (AggData){ 
 
   source("AggSubSites.R")
   SoilMa<-AggSubSites(SoilM)
@@ -236,6 +236,16 @@ barplot(xlab='Variable',ylab='Importance',names.arg=rownames(imp)[order(imp[, 1]
 a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Veg',ylab='VWC')
 #barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
 
+PredTree<-predict(Tfit,SoilM,predict.all=TRUE)
+AllTrees<-PredTree$individual
+StdTrees<-apply(AllTrees,1,sd) #Get the standard deviation of the predicted values over all trees
+PredTree<-PredTree$aggregate
+plot(.01*SoilM$VWC,.01*PredTree)
+errbar(.01*SoilM$VWC,.01*PredTree,.01*PredTree+.01*StdTrees,.01*PredTree-.01*StdTrees,xlab='Measured',ylab='Predicted',main='Random Forest Model Fit to Test Data',errbar.col='grey')
+points(.01*SoilM$VWC,.01*PredTree)
+lines(c(0,.65),c(0,.65),col='red')
+
+
 #Separate by trip and veg
 TripVegMat<-data.frame(cbind(Year=as.factor(c(2016,2016,2017,2017,2018)),Trip=c(1,2,1,2,1)),DenseMeadow=c(1:5),MixCon=c(1:5),Shrub=c(1:5),Sparse=c(1:5))
 if(AggData){SoilMpred<-SoilM}else{SoilMpred<-SoilM[,5:53]}
@@ -318,9 +328,10 @@ hist(VWCpred_ICB-SoilM_match$VWC,col=rgb(1,0,0,.5),add=TRUE)
 #nt=round(length(thetaM)/4)
 #Trn<-sample(1:length(thetaM),nt*3,replace=FALSE)
 
+
+
 #Select random sites for training
-SiteNums=sort(unique(SoilM$SiteNum))
-ns=length(SiteNums)
+ns=nrow(SiteMeans)
 pctX=.70 #Proportion of sites to use
 numX=min(SiteMeans$CountCat)-1 #Number of sites to use from each category
 ByPct=1
@@ -337,7 +348,9 @@ CorTest = 0 #Hold correlation for each test set
 RMSEtrain = 0
 RMSEtest = 0
 Top3=matrix(nrow=3,ncol=NumSamps)
-YearMeanVWC = Top3 #Hold mean VWC for each year for each training set
+YearMeanVWC = matrix(nrow=3,ncol=NumSamps) #Hold mean VWC for each year for each training set
+
+SoilM$SiteNum<-floor(SoilM$SubSite)
 
 for(g in 1:NumSamps){
 
@@ -471,8 +484,8 @@ truehist(StdTrees-abs(PredTree2-Tsty)) #Look at std dev of predictions vs error
 } 
 }
 
-truehist(CorTrain,xlim=c(.5,1))
-truehist(CorTest,xlim=c(.5,1))
+truehist(CorTrain,xlim=c(0,1))
+truehist(CorTest,xlim=c(0,1))
 truehist(.01*RMSEtrain,xlim=c(0,.3))
 truehist(.01*RMSEtest,xlim=c(0,.3))
 Top3  #Show top 3 variables in terms of importance for each run
@@ -492,12 +505,13 @@ t.test(YearMeanVWC[3,],YearMeanVWC[1,])
 #Should I add error bars to all these graphs, or just state differences? Error bars might get complicated with variables that have lots of possible values (unlike year, which only has 3).
 
 #Model using full dataset
-#Note: Latitude and Longitude show high importance, but they're also highly correlated with elevation, so maybe shouldn't include?
-Tfit<-randomForest(VWC~LatPoint+LonPoint+Veg+Veg73+Year+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m+TWI.10m+Time_Since_Fire+Fire_Num+SevNum+Elevation,data=SoilM,nodesize=5,ntree=500)#save(Tfit,file='RandomTree_04_11_15_7veg_tst25.rdata')
+Tfit<-randomForest(VWC~Dist_From_River+LatPoint+LonPoint+Veg+Veg73+Year+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m+TWI.10m+Time_Since_Fire+Fire_Num+SevNum+Elevation,data=SoilM,importance=TRUE,importanceSD=TRUE,nodesize=5,ntree=500)#save(Tfit,file='RandomTree_04_11_15_7veg_tst25.rdata')
 imp<-Tfit$importance
 impSE<-Tfit$importanceSD
 barplot(xlab='Variable',ylab='Importance',names.arg=rownames(imp)[order(imp[, 1], decreasing=TRUE)],height=imp[order(imp[, 1], decreasing=TRUE),1],cex.names=.5)
 errbar(rownames(imp),imp[,1],imp[,1]+impSE,imp[,1]-impSE,errbar.col='grey')
+
+
 
 
 ##map
