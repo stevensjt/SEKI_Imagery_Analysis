@@ -107,9 +107,10 @@ subplots$Year <- factor(subplots$Year)
 subplots$Shrubs_Any <- ifelse(subplots$Shrubs_Simple=="None",0,1)
 
 ####1c. Exploratory analyses and plots####
-hist(change$dens_change) #wide range of density change values (2017-1970), tendency for increase
-hist(change$ba_change) #same for BA, tendency for decrease
-  
+#hist(change$dens_change) #wide range of density change values (2017-1970), tendency for increase
+#hist(change$ba_change) #same for BA, tendency for decrease
+
+m2a <-   
 p2a<-
   ggplot(subplots,
        aes(x = Burned, y = dens, fill = factor(Year))) +
@@ -286,7 +287,7 @@ r73scb <- #Load the processed 1973 veg raster
   raster("./Processed Data/Classified Images/Final rasters/1973_raster_match_SCB_analysis.tif")
 r14scb <- #Load the processed 2014 veg raster
   raster("./Processed Data/Classified Images/Final rasters/2014_raster_match_SCB_analysis.tif")
-perims <- readOGR("../../GIS/Raw Data/Sugarloaf Fire Perimeters/Sug_FRAP_FirePerims.shp")
+perims <- readOGR("../../GIS/Raw Data/Sugarloaf Fire Perimeters/Sugarloaf Fires 1973-2003.shp")
 
 ###Process data
 #Tip: http://r-sig-geo.2731867.n2.nabble.com/Efficient-way-to-obtain-gridded-count-of-overlapping-polygons-td6034590.html
@@ -300,19 +301,25 @@ r73_pts$n_fires[r73_pts$n_fires > 2] <- #93 pixels had 4 fires, small n. 1360 pi
   2 #93 pixels at 0.16 ha/pixel = 14.88 ha
 r14_pts$n_fires[r14_pts$n_fires > 2] <- #93 pixels had 4 fires, small n. Converting to 3.
   2
-#gridded(r73_pts) <- TRUE #For more efficient plotting #Deprecated
 
 ###Plot
-#spplot(r73_pts["n_fires"], sp.layout=list("sp.polygons", perims2, first=F)) #Option to plot w perims
-pdf("./Figures/MS/Fig3.pdf", width = 6, height = 8)
-sp::spplot(r73_pts["n_fires"],colorkey=list(at=c(0,1,2,4),
-                                        labels = list(
-                                          at=c(0.5,1.5,3),
-                                          labels = c("0","1","2-4")
-                                        )))
-grid.text("times burned", x=unit(0.9, "npc"), y=unit(0.98, "npc"))
+#spplot(r73_pts["n_fires"], sp.layout=list("sp.polygons", perims2, first=F)) #Option to plot w perims, don't use if gridded = TRUE
+gridded(r73_pts) <- TRUE #For more efficient plotting, converts to "SpatialPixels"
+pdf("../../GIS/Base Layers/TimesBurned.pdf", width = 3, height = 4)
+spplot(r73_pts["n_fires"],
+       colorkey=list(at=c(0,1,2,4),
+                     labels = list(at=c(0.5,1.5,3), labels = c("0","1","2-4")
+                                   )
+                     ),
+       main = "times burned 1973-2003"
+       )
+#grid.text("times burned", x=unit(0.9, "npc"), y=unit(0.98, "npc"))
 dev.off()
 
+r73_pts["n_fires"]
+r <- raster(r73_pts, "n_fires")
+p <- rasterToPolygons(r, dissolve = TRUE)
+writeRaster(r,"../../GIS/Raw Data/Sugarloaf Fire Perimeters/Nburned.tif")
 ####2c. Analysis####
 
 ###Set up change analysis
