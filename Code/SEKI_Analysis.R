@@ -443,8 +443,9 @@ library(ggcorrplot)
 library(tableHTML)
 library(gridExtra)
 library(grid)
+library(reshape2) #for melt(); version 1.4.3
 
-####2a. Data processing####
+####2a. Data processing- only run once, don't need to re-run####
 #r73scb <- 
 #  raster("./Processed Data/Classified Images/Final rasters/1973_raster_match_SCB.tif")
 
@@ -519,7 +520,7 @@ r14_pts$n_fires[r14_pts$n_fires > 2] <- #93 pixels had 4 fires, small n. Convert
 ###Plot
 #spplot(r73_pts["n_fires"], sp.layout=list("sp.polygons", perims2, first=F)) #Option to plot w perims, don't use if gridded = TRUE
 gridded(r73_pts) <- TRUE #For more efficient plotting, converts to "SpatialPixels"
-pdf("../../GIS/Base Layers/TimesBurned.pdf", width = 3, height = 4)
+#pdf("../../GIS/Base Layers/TimesBurned.pdf", width = 3, height = 4)
 spplot(r73_pts["n_fires"],
        colorkey=list(at=c(0,1,2,4),
                      labels = list(at=c(0.5,1.5,3), labels = c("0","1","2-4")
@@ -528,11 +529,10 @@ spplot(r73_pts["n_fires"],
        main = "times burned 1973-2003"
        )
 #grid.text("times burned", x=unit(0.9, "npc"), y=unit(0.98, "npc"))
-dev.off()
+#dev.off()
 
-r73_pts["n_fires"]
-r <- raster(r73_pts, "n_fires")
-p <- rasterToPolygons(r, dissolve = TRUE)
+#r <- raster(r73_pts, "n_fires") #Only need to do once.
+#p <- rasterToPolygons(r, dissolve = TRUE)
 #writeOGR(p,"../../GIS/Raw Data/Sugarloaf Fire Perimeters","Nburned", driver = "ESRI Shapefile")
 ####2c. Analysis####
 
@@ -651,7 +651,7 @@ for(s in scenarios){
   
 }##End scenario loop
 
-pdf("./Figures/MS/Fig4.pdf", width = 8, height = 8)
+pdf("./Figures/MS/Fig3.pdf", width = 8, height = 6)
 grid.arrange(gcp[[1]], gcp[[2]], gcp[[3]], gcp[[4]], 
              ncol = 2)
 dev.off()
