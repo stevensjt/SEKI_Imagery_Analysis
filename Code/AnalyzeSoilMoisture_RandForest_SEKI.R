@@ -273,6 +273,43 @@ TripVegMat[i,3:6]<-.01*a$y
 barplot(as.matrix(TripVegMat[,3:6]),beside=TRUE,ylab='Mean Soil Moisture (VWC)',legend.text=c("June 2016","July 2016","June 2017","July 2017","June 2018"))
 
 
+#Test alternate realities in terms of veg cover and fire history
+SoilM_allburn<-SoilM
+VegOps<-levels(SoilM$Veg)
+SoilM_allburn$Veg[SoilM$Veg!='sparse meadow']<-VegOps[4]
+#levels(SoilM_allburn$Veg)<-VegOps
+SevOps<-levels(SoilM$SevNum)
+SoilM_allburn$SevNum[SoilM$Veg!='sparse meadow']<-factor(SevOps[5])
+#levels(SoilM_allburn$SevNum)<-SevOps
+SoilM_allburn$Time_Since_Fire[(SoilM_allburn$Time_Since_Fire>90)&(SoilM$Veg!='sparse meadow')]<-13
+SoilM_allburn$Fire_Num[(SoilM_allburn$Fire_Num==0)&(SoilM$Veg!='sparse meadow')]<-1
+PredSparse<-predict(Tfit,SoilM_allburn)
+PredMeas<-predict(Tfit,SoilM)
+plot(PredMeas,PredSparse,type='p',xlim=c(0,60),ylim=c(0,60))
+points(PredMeas[SoilM$Veg=='dense meadow'],PredSparse[SoilM$Veg=='dense meadow'])
+points(PredMeas[SoilM$Veg=='dense meadow'],PredSparse[SoilM$Veg=='dense meadow'],col='blue')
+points(PredMeas[SoilM$Veg=='sparse meadow'],PredSparse[SoilM$Veg=='sparse meadow'],col='red')
+points(PredMeas[SoilM$Veg=='mixed conifer'],PredSparse[SoilM$Veg=='mixed conifer'],col='green')
+lines(c(0,60),c(0,60))
+
+SoilM_noburn<-SoilM
+VegOps<-levels(SoilM$Veg)
+SoilM_noburn$Veg[SoilM$Veg!='mixed conifer']<-VegOps[2]
+#levels(SoilM_noburn$Veg)<-VegOps
+SevOps<-levels(SoilM$SevNum)
+SoilM_noburn$SevNum[SoilM$SevNum!=0]<-factor(0)
+levels(SoilM_noburn$SevNum)<-SevOps
+SoilM_noburn$Time_Since_Fire[(SoilM_noburn$Time_Since_Fire<90)]<-100
+SoilM_noburn$Fire_Num[(SoilM_noburn$Fire_Num==0)]<-0
+PredNoburn<-predict(Tfit,SoilM_noburn)
+plot(PredMeas,PredNoburn,type='p',xlim=c(0,60),ylim=c(0,60))
+points(PredMeas[SoilM$Veg=='dense meadow'],PredNoburn[SoilM$Veg=='dense meadow'])
+points(PredMeas[SoilM$Veg=='dense meadow'],PredNoburn[SoilM$Veg=='dense meadow'],col='blue')
+points(PredMeas[SoilM$Veg=='sparse meadow'],PredNoburn[SoilM$Veg=='sparse meadow'],col='red')
+points(PredMeas[SoilM$Veg=='mixed conifer'],PredNoburn[SoilM$Veg=='mixed conifer'],col='green')
+lines(c(0,60),c(0,60))
+
+
 #Compare models from ICB and Sugarloaf
 
 SoilM_match<-SoilM
