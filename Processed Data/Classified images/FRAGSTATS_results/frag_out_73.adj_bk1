@@ -1,0 +1,16 @@
+C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\Classified images\Final rasters\1973_raster_match_SCB_analysis.tif 
+Class ID / ID, 3, 1, 4, 2, 6, 5, background
+, 3,  48968, 2245, 6817, 1606, 196, 191,    573
+, 1, 2245,   9848, 3925, 384, 21, 19,    130
+, 4, 6817, 3925, 145086, 3885, 751, 97,    651
+, 2, 1606, 384, 3885,   4936, 11, 14,     84
+, 6, 196, 21, 751, 11,   1760, 16,      5
+, 5, 191, 19, 97, 14, 16,    612,      3
+C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\Classified images\Final rasters\2014_raster_match_SCB_analysis.tif 
+Class ID / ID, 3, 4, 2, 1, 6, 5, background
+, 3,  48230, 6581, 1695, 2231, 147, 170,    570
+, 4, 6581, 144960, 4046, 3288, 538, 108,    703
+, 2, 1695, 4046,   7724, 689, 73, 3,     82
+, 1, 2231, 3288, 689,   9232, 47, 14,     83
+, 6, 147, 538, 73, 47,   1502, 23,      6
+, 5, 170, 108, 3, 14, 23,    612,      2
