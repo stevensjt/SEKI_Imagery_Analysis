@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xml:lang="en"><Esri><CreaDate>20190320</CreaDate><CreaTime>15074300</CreaTime><ArcGISFormat>1.0</ArcGISFormat><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="c:\program files (x86)\arcgis\desktop10.6\ArcToolbox\Toolboxes\Spatial Analyst Tools.tbx\ExtractMultiValuesToPoints" Date="20190320" Time="150743">ExtractMultiValuesToPoints Raster_To_Points "'C:\Users\boisrame\Google Drive\ThompsonFire\SEQKI\GPSstuff\sugarloaf_DEM\dem_clip' dem_clip" NONE</Process></lineage></DataProperties></Esri></metadata>

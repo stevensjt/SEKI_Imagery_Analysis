@@ -6,6 +6,7 @@
 AggData=1 #For grouping measurements that are the same veg type at the same site
 Ghost=0   #For adding in "ghost" measurements to counteract effects of missing data
 PICOsep=0  #For separating PICO from other conifers
+Extrap=1 #If want to extrapolate to other non-measured points
 
 library(nlme) # fit regression w/ spatially correlated errors
 library(chron)
@@ -26,6 +27,47 @@ SoilM <- read.csv('../Raw Data/Soil Moisture/SoilMoisture_SEKI_Combined_GISextra
 #SoilM<-SoilM[SoilM$DOY>180,] #Late Summer
 #SoilM<-SoilM[(SoilM$DOY>153)&(SoilM$DOY<180),] #June
 
+if(Extrap){
+SoilMbig <- read.csv('../Processed Data/GIS/RasterToPointsValues.csv',header=TRUE)    #('SoilMoistureMATLAB_All_10_02_15.csv')
+SoilMbig <- SoilMbig[SoilMbig$aspect>-2,] #Get rid of bad data points
+SoilMbig <- SoilMbig[SoilMbig$SevNum<5,] #Get rid of bad data points
+SoilMbig <- SoilMbig[(SoilMbig$Veg!=3)&(SoilMbig$Veg!=5)&(SoilMbig$Veg73!=3)&(SoilMbig$Veg73!=5)&SoilMbig$Veg>0,]
+
+SoilMbig$Fire_Num[SoilMbig$Fire_Num<0] <- 0
+
+SoilMbig$Veg14<-SoilMbig$Veg
+SoilMbig$Veg[SoilMbig$Veg==1]<-"shrub"
+#SoilMbig$Veg73[SoilMbig$Veg73==1]<-"shrub"
+SoilMbig$Veg[SoilMbig$Veg==2]<-"sparse meadow"
+#SoilMbig$Veg73[SoilMbig$Veg73==2]<-"sparse meadow"
+SoilMbig$Veg[SoilMbig$Veg==4]<-"mixed conifer"
+#SoilMbig$Veg73[SoilMbig$Veg73==4]<-"mixed conifer"
+SoilMbig$Veg[SoilMbig$Veg==6]<-"dense meadow"
+#SoilMbig$Veg73[SoilMbig$Veg73==6]<-"dense meadow"
+
+SoilMbig$Veg<-as.factor(SoilMbig$Veg)
+SoilMbig$Veg73<-as.factor(SoilMbig$Veg73)
+
+  AspInd=.5*(1-cos(pi*(SoilMbig[,'aspect']-30)/180)) 
+  AspInd[SoilMbig[,'aspect']<0]=0
+  SoilMbig$AspectDeg=SoilMbig$aspect
+  SoilMbig$Aspect=AspInd
+
+    SoilMbig$Time_Since_Fire <- (2016-SoilMbig$Fire_Year)
+    SoilMbig$Time_Since_Fire[SoilMbig$Time_Since_Fire>100]=100
+    
+      SoilMbig$TWI.10m<-log(SoilMbig$flow_acc_d/max(0.0001,tan(SoilMbig$slope_deg*pi/180)))
+      SoilMbig$TWI.10m[SoilMbig$TWI.10m<0]=0
+
+        SoilMbig$Upslope.Area<-SoilMbig$flow_acc_d
+        SoilMbig$Upslope.Area[SoilMbig$flow_acc_d>5000]=5000
+        
+ hist(SoilMbig$slope_deg[SoilMbig$Veg14==4],freq=FALSE,col = rgb(0,1,0,.5))
+ hist(SoilMbig$slope_deg[SoilMbig$Veg14==6],freq=FALSE,col = rgb(0,0,1,.5),add=TRUE)
+
+ hist(SoilMbig$TWI.10m[SoilMbig$Veg14==4],freq=FALSE,col = rgb(0,1,0,.5))
+ hist(SoilMbig$TWI.10m[SoilMbig$Veg14==6],freq=FALSE,col = rgb(0,0,1,.5),add=TRUE)
+}
 
 SoilM <-SoilM[SoilM$Site!='Calibration',] #Remove a few calibration points
 
@@ -49,8 +91,6 @@ SoilM$AspectDeg=SoilM$aspect
 SoilM$Aspect=AspInd
 
 
-
-
 #Get dates playing nice
 SoilM$Date <- as.Date(SoilM$TimeStamp,format="%m/%d/%Y")
 SoilM$Year <- 2015+as.numeric(years(SoilM$Date))
@@ -69,6 +109,7 @@ SoilM$Veg14<-as.numeric(SoilM$X2014_veg)
 #Get time since fire
 SoilM$Time_Since_Fire <- (SoilM$Year-SoilM$Fire_Year)
 SoilM$Time_Since_Fire[SoilM$Time_Since_Fire>100]=100 #Set max years since fire to 100
+
 
 
 if (AggData){ 
@@ -129,6 +170,8 @@ SoilM$slope_deg[SoilM$slope_deg<0]=0 #Replace noData values with zeros
 
 SoilM$TWI.10m<-log(SoilM$flow_acc_d/max(0.0001,tan(SoilM$slope_deg*pi/180)))
 SoilM$TWI.10m[SoilM$TWI.10m<0]=0
+
+
 
 #SiteVeg<-aggregate(SoilM$VegChange,list(SoilM$Site),median)
 #GrpVeg<-sort(unique(SiteVeg$x))
@@ -216,6 +259,8 @@ Tfit_ICB<-Tfit
 SoilM$Upslope.Area<-SoilM$flow_acc_d
 SoilM$Upslope.Area[SoilM$flow_acc_d>5000]=5000
 
+
+
 ##Un-comment these if want to normalize
 #SoilM$TimeSevInd<-(1-(SoilM$Time.Since.Fire/100))*(SoilM$SevNum/4)
 #TempTPI<-(SoilM$TPI300m-min(SoilM$TPI300m))/(max(SoilM$TPI300m)-min(SoilM$TPI300m))
@@ -235,6 +280,45 @@ barplot(xlab='Variable',ylab='Importance',names.arg=rownames(imp)[order(imp[, 1]
 
 a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Veg',ylab='VWC')
 #barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
+
+if(Extrap){
+  SoilMbig$Year=factor(2016,levels=levels(SoilM$Year))
+  SoilMbig$DOY=150
+  SoilMbig$SevNum<-as.factor(SoilMbig$SevNum)
+  
+  PredTreeBig<-predict(Tfit,SoilMbig,predict.all=TRUE)
+  AllTrees<-PredTreeBig$individual
+  StdTrees1<-apply(AllTrees,1,sd) #Get the standard deviation of the predicted values over all trees
+  Q25Trees1<-apply(AllTrees,1,quantile,.25) #Get the standard deviation of the predicted values over all trees
+  Q75Trees1<-apply(AllTrees,1,quantile,.75) #Get the standard deviation of the predicted values over all trees
+  PredToday<-PredTreeBig$aggregate
+  
+  SoilMold=SoilMbig
+  SoilMold$Veg14<-SoilMold$Veg73
+  SoilMold$Time_Since_Fire<-100
+  SoilMold$SevNum<-factor(0,levels=levels(SoilM$SevNum))
+  SoilMold$Fire_Num<-0
+  
+  PredTreeOld<-predict(Tfit,SoilMold,predict.all=TRUE)
+  AllTrees<-PredTreeOld$individual
+  StdTrees2<-apply(AllTrees,1,sd) #Get the standard deviation of the predicted values over all trees
+  Q25Trees2<-apply(AllTrees,1,quantile,.25) #Get the standard deviation of the predicted values over all trees
+  Q75Trees2<-apply(AllTrees,1,quantile,.75) #Get the standard deviation of the predicted values over all trees
+  PredUnburned<-PredTreeOld$aggregate
+  
+  plot(PredUnburned,PredToday)
+  
+  Fchange<-(SoilMbig$Veg73!=as.factor(SoilMbig$Veg14))
+  plot(PredUnburned[Fchange],PredToday[Fchange])
+  points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==6],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==6],pch=2,col='blue') #Con-Wet
+  points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==2],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==2],pch=3,col='grey') #Con-Sparse
+  points(PredUnburned[SoilMbig$Veg73=='6'&SoilMbig$Veg14==4],PredToday[SoilMbig$Veg73=='6'&SoilMbig$Veg14==4],pch=3,col='green') #Wet-Con
+  points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==1],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==1],pch=4,col='brown') #Con-Shrub
+  lines(c(5,40),c(5,40),lty=2)
+  
+  hist(PredToday[Fchange]-PredUnburned[Fchange],breaks=c(-5,-3,-1,1,3,5))
+  mean(PredToday[Fchange]-PredUnburned[Fchange])
+}
 
 PredTree<-predict(Tfit,SoilM,predict.all=TRUE)
 AllTrees<-PredTree$individual
