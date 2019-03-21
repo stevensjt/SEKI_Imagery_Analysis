@@ -282,8 +282,8 @@ a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Veg',ylab='VWC')
 #barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
 
 if(Extrap){
-  SoilMbig$Year=factor(2016,levels=levels(SoilM$Year))
-  SoilMbig$DOY=205
+  SoilMbig$Year=factor(2018,levels=levels(SoilM$Year))
+  SoilMbig$DOY=153 #205 #
   SoilMbig$SevNum<-as.factor(SoilMbig$SevNum)
   
   PredTreeBig<-predict(Tfit,SoilMbig,predict.all=TRUE)
@@ -309,15 +309,16 @@ if(Extrap){
   plot(PredUnburned,PredToday)
   
   Fchange<-(SoilMbig$Veg73!=as.factor(SoilMbig$Veg14))
-  plot(PredUnburned[Fchange],PredToday[Fchange],xlab="Modeled Unburned Soil Moisture (%)",ylab="Modeled Actual Soil Moisture (%)")
+  plot(PredUnburned[Fchange],PredToday[Fchange],xlab="Modeled Unburned Soil Moisture (%)",ylab="Modeled Actual Soil Moisture (%)",main="June 2018")
   points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==6],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==6],pch=15,col='blue') #Con-Wet
   points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==2],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==2],pch=16,col='grey') #Con-Sparse
-  points(PredUnburned[SoilMbig$Veg73=='6'&SoilMbig$Veg14==4],PredToday[SoilMbig$Veg73=='6'&SoilMbig$Veg14==4],pch=17,col='green') #Wet-Con
+  points(PredUnburned[SoilMbig$Veg73=='6'&SoilMbig$Veg14==4],PredToday[SoilMbig$Veg73=='6'&SoilMbig$Veg14==4],pch=17,col=rgb(.2,.75,.2)) #Wet-Con
   points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==1],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==1],pch=18,col='brown') #Con-Shrub
   lines(c(5,45),c(5,45),lty=2,lwd=2)
-  legend(5,40,c("Conifer - Dense Mdw.","Conifer - Sparse Mdw.","Dense Mdw. - Conifer","Conifer-Shrub","Other"),pch=c(15,16,17,18,1),col=c("blue","grey","green","brown","black"))
+  legend(5,40,c("Conifer - Dense Mdw.","Conifer - Sparse Mdw.","Conifer-Shrub","Dense Mdw. - Conifer","Other"),pch=c(15,16,18,17,1),col=c("blue","grey","brown",rgb(.2,.75,.2),"black"))
   
-  hist(PredToday[Fchange]-PredUnburned[Fchange],breaks=c(-5,-3,-1,1,3,5))
+  hist(PredToday[Fchange]-PredUnburned[Fchange],breaks=c(-5,-3,-1,1,3,5),main="June 2018",xlab="Actual-Unburned Soil Moisture %")
+  hist((PredToday[Fchange]-PredUnburned[Fchange])/PredUnburned[Fchange],breaks=c(-5,-3,-1,1,3,5),main="July 2016",xlab="Actual-Unburned Soil Moisture %")
   mean(PredToday[Fchange]-PredUnburned[Fchange])
 }
 
