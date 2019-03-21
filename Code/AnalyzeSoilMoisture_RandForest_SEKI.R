@@ -283,7 +283,7 @@ a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Veg',ylab='VWC')
 
 if(Extrap){
   SoilMbig$Year=factor(2016,levels=levels(SoilM$Year))
-  SoilMbig$DOY=150
+  SoilMbig$DOY=205
   SoilMbig$SevNum<-as.factor(SoilMbig$SevNum)
   
   PredTreeBig<-predict(Tfit,SoilMbig,predict.all=TRUE)
@@ -309,12 +309,13 @@ if(Extrap){
   plot(PredUnburned,PredToday)
   
   Fchange<-(SoilMbig$Veg73!=as.factor(SoilMbig$Veg14))
-  plot(PredUnburned[Fchange],PredToday[Fchange])
-  points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==6],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==6],pch=2,col='blue') #Con-Wet
-  points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==2],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==2],pch=3,col='grey') #Con-Sparse
-  points(PredUnburned[SoilMbig$Veg73=='6'&SoilMbig$Veg14==4],PredToday[SoilMbig$Veg73=='6'&SoilMbig$Veg14==4],pch=3,col='green') #Wet-Con
-  points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==1],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==1],pch=4,col='brown') #Con-Shrub
-  lines(c(5,40),c(5,40),lty=2)
+  plot(PredUnburned[Fchange],PredToday[Fchange],xlab="Modeled Unburned Soil Moisture (%)",ylab="Modeled Actual Soil Moisture (%)")
+  points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==6],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==6],pch=15,col='blue') #Con-Wet
+  points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==2],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==2],pch=16,col='grey') #Con-Sparse
+  points(PredUnburned[SoilMbig$Veg73=='6'&SoilMbig$Veg14==4],PredToday[SoilMbig$Veg73=='6'&SoilMbig$Veg14==4],pch=17,col='green') #Wet-Con
+  points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==1],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==1],pch=18,col='brown') #Con-Shrub
+  lines(c(5,45),c(5,45),lty=2,lwd=2)
+  legend(5,40,c("Conifer - Dense Mdw.","Conifer - Sparse Mdw.","Dense Mdw. - Conifer","Conifer-Shrub","Other"),pch=c(15,16,17,18,1),col=c("blue","grey","green","brown","black"))
   
   hist(PredToday[Fchange]-PredUnburned[Fchange],breaks=c(-5,-3,-1,1,3,5))
   mean(PredToday[Fchange]-PredUnburned[Fchange])
