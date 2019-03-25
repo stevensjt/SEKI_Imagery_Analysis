@@ -1,9 +1,9 @@
-LID , TYPE , PLAND , LPI , AREA_MN , AREA_SD , FRAC_MN
-C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\1973_VegOnly_SCB_filter_ClipFire.tif , cls_2 ,       7.6199 ,       0.3144 ,       0.3815 ,       1.0825 ,       1.1466
-C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\1973_VegOnly_SCB_filter_ClipFire.tif , cls_1 ,       7.7225 ,       0.7170 ,       0.7412 ,       3.5996 ,       1.1390
-C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\1973_VegOnly_SCB_filter_ClipFire.tif , cls_4 ,      83.4243 ,      81.8869 ,      15.3401 ,     344.0184 ,       1.1079
-C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\1973_VegOnly_SCB_filter_ClipFire.tif , cls_6 ,       1.2332 ,       0.2257 ,       1.5813 ,       3.5950 ,       1.1270
-C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\2014_VegOnly_SCB_filter_ClipFire.tif , cls_2 ,       8.9570 ,       0.5755 ,       0.5275 ,       2.3351 ,       1.1232
-C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\2014_VegOnly_SCB_filter_ClipFire.tif , cls_4 ,      82.7233 ,      81.8396 ,      12.8771 ,     316.1825 ,       1.0992
-C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\2014_VegOnly_SCB_filter_ClipFire.tif , cls_1 ,       7.2590 ,       0.7045 ,       0.8251 ,       3.5407 ,       1.1288
-C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\2014_VegOnly_SCB_filter_ClipFire.tif , cls_6 ,       1.0607 ,       0.2524 ,       1.3767 ,       3.6237 ,       1.1125
+LID , TYPE , PLAND , LPI , AREA_MN , AREA_SD , FRAC_MN , FRAC_AM
+C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\1973_VegOnly_SCB_filter_ClipFire.tif , cls_2 ,       7.6199 ,       0.3144 ,       0.3815 ,       1.0825 ,       1.1466 ,       1.2056
+C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\1973_VegOnly_SCB_filter_ClipFire.tif , cls_1 ,       7.7225 ,       0.7170 ,       0.7412 ,       3.5996 ,       1.1390 ,       1.2066
+C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\1973_VegOnly_SCB_filter_ClipFire.tif , cls_4 ,      83.4243 ,      81.8869 ,      15.3401 ,     344.0184 ,       1.1079 ,       1.3916
+C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\1973_VegOnly_SCB_filter_ClipFire.tif , cls_6 ,       1.2332 ,       0.2257 ,       1.5813 ,       3.5950 ,       1.1270 ,       1.1655
+C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\2014_VegOnly_SCB_filter_ClipFire.tif , cls_2 ,       8.9570 ,       0.5755 ,       0.5275 ,       2.3351 ,       1.1232 ,       1.2069
+C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\2014_VegOnly_SCB_filter_ClipFire.tif , cls_4 ,      82.7233 ,      81.8396 ,      12.8771 ,     316.1825 ,       1.0992 ,       1.3786
+C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\2014_VegOnly_SCB_filter_ClipFire.tif , cls_1 ,       7.2590 ,       0.7045 ,       0.8251 ,       3.5407 ,       1.1288 ,       1.1920
+C:\Users\boisrame\Documents\GitHub\FireWater\SEKI_Imagery_Analysis\Processed Data\GIS\2014_VegOnly_SCB_filter_ClipFire.tif , cls_6 ,       1.0607 ,       0.2524 ,       1.3767 ,       3.6237 ,       1.1125 ,       1.1643
