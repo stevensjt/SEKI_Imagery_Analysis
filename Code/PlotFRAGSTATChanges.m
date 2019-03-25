@@ -3,8 +3,8 @@
 %Once have values for all years, change this so all numbers in a matrix.
 
 %load('VegAreaSlopeCctd.mat'); %Load areas and accuracy measures
-load('FragstatsLandOut.mat'); %Load landscape level indices from Fragstats
-load('FragstatClassOut.mat'); %Load class level metrics from Fragstats
+load('C:/Users/boisrame/Google Drive/ThompsonFire/VegChangeAnals/FragstatsLandOut.mat'); %Load landscape level indices from Fragstats
+load('C:/Users/boisrame/Google Drive/ThompsonFire/VegChangeAnals/FragstatClassOut.mat'); %Load class level metrics from Fragstats
 load('VegPatches05m.mat'); %Load individual patch sizes from Fragstats
 %load('FireList.mat'); %Load list of all fires
 %load('FragstatClassOut2.mat'); %more class level metrics
