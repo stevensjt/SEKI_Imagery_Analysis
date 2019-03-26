@@ -317,8 +317,8 @@ if(Extrap){
   lines(c(5,45),c(5,45),lty=2,lwd=2)
   legend(5,40,c("Conifer - Dense Mdw.","Conifer - Sparse Mdw.","Conifer-Shrub","Dense Mdw. - Conifer","Other"),pch=c(15,16,18,17,1),col=c("blue","grey","brown",rgb(.2,.75,.2),"black"))
   
-  hist(PredToday[Fchange]-PredUnburned[Fchange],breaks=c(-5,-3,-1,1,3,5),main="June 2018",xlab="Actual-Unburned Soil Moisture %")
-  hist((PredToday[Fchange]-PredUnburned[Fchange])/PredUnburned[Fchange],breaks=c(-5,-3,-1,1,3,5),main="July 2016",xlab="Actual-Unburned Soil Moisture %")
+  hist(PredToday[Fchange]-PredUnburned[Fchange],breaks=seq(-3.75,3.75,.5),main="June 2018",xlab="Actual-Unburned Soil Moisture (%)")
+  hist(100*(PredToday[Fchange]-PredUnburned[Fchange])/PredUnburned[Fchange],breaks=seq(-62.5,62.5,5),main="July 2016",xlab="% Change in Actual-Unburned Soil Moisture")
   mean(PredToday[Fchange]-PredUnburned[Fchange])
 }
 
