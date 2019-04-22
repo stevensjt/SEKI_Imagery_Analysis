@@ -501,8 +501,10 @@ library(reshape2) #for melt(); version 1.4.3
 r73scb <- #Load the processed 1973 veg raster
   raster("./Processed Data/Classified Images/Final rasters/1973_raster_match_SCB_analysis.tif")
 r14scb <- #Load the processed 2014 veg raster
-  raster("./Processed Data/Classified Images/Final rasters/2014_raster_match_SCB_analysis.tif")
-perims <- readOGR("../../GIS/Raw Data/Sugarloaf Fire Perimeters/Sugarloaf Fires 1973-2003.shp")
+  raster("./Processed Data/Classified Images/Final rasters/2014_raster_match_SCB_analysis_fixwetlandsGB.tif")
+#r14scb <- #Load the processed 2014 veg raster
+#  raster("./Processed Data/Classified Images/Final rasters/2014_raster_match_SCB_analysis.tif")
+perims <- readOGR("./Processed Data/GIS/Sugarloaf Fires 1973-2003.shp")
 
 ###Process data
 #Tip: http://r-sig-geo.2731867.n2.nabble.com/Efficient-way-to-obtain-gridded-count-of-overlapping-polygons-td6034590.html
@@ -511,7 +513,7 @@ perims2 <- spTransform(perims, CRSobj = crs(r73scb)) #reproject perimeters
 r73_pts <- rasterToPoints(r73scb,spatial=TRUE)
 r14_pts <- rasterToPoints(r14scb,spatial=TRUE)
 r14_pts$n_fires <- r73_pts$n_fires <- #Count number of overlapping fires
-  sapply(over(r73_pts, geometry(perims2), returnList = TRUE), length)
+  sapply(over(r73_pts, geometry(perims2), returnList = TRUE), length) #START HERE, error due to fixwetlandsGB file?
 r73_pts$n_fires[r73_pts$n_fires > 2] <- #93 pixels had 4 fires, small n. 1360 pixels had 3 fires, chi-squared test was not converging. Converting to 3+4 burns to 2.
   2 #93 pixels at 0.16 ha/pixel = 14.88 ha
 r14_pts$n_fires[r14_pts$n_fires > 2] <- #93 pixels had 4 fires, small n. Converting to 3.
@@ -520,16 +522,20 @@ r14_pts$n_fires[r14_pts$n_fires > 2] <- #93 pixels had 4 fires, small n. Convert
 ###Plot
 #spplot(r73_pts["n_fires"], sp.layout=list("sp.polygons", perims2, first=F)) #Option to plot w perims, don't use if gridded = TRUE
 gridded(r73_pts) <- TRUE #For more efficient plotting, converts to "SpatialPixels"
-#pdf("../../GIS/Base Layers/TimesBurned.pdf", width = 3, height = 4)
+pdf("../../GIS/Base Layers/TimesBurned.pdf", width = 3, height = 4)
 spplot(r73_pts["n_fires"],
+       col.regions = c("#0eb8f0", "#ffffbf", "#ff7f00","#ff7f00"),
+       #col.regions = rainbow(100, start = 4/6, end = 1),
+       #col.regions = brewer.pal(n = 5, name = "OrRd"),
        colorkey=list(at=c(0,1,2,4),
                      labels = list(at=c(0.5,1.5,3), labels = c("0","1","2-4")
                                    )
                      ),
+       cuts = 3,
        main = "times burned 1973-2003"
-       )
+       ) # "#0eb8f0", "#ffffbf", "#ff7f00"
 #grid.text("times burned", x=unit(0.9, "npc"), y=unit(0.98, "npc"))
-#dev.off()
+dev.off()
 
 #r <- raster(r73_pts, "n_fires") #Only need to do once.
 #p <- rasterToPolygons(r, dissolve = TRUE)
