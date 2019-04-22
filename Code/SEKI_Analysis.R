@@ -500,27 +500,86 @@ library(reshape2) #for melt(); version 1.4.3
 ###Read data
 r73scb <- #Load the processed 1973 veg raster
   raster("./Processed Data/Classified Images/Final rasters/1973_raster_match_SCB_analysis.tif")
-r14scb <- #Load the processed 2014 veg raster
+r14scb_new <- #Load the processed 2014 veg raster
   raster("./Processed Data/Classified Images/Final rasters/2014_raster_match_SCB_analysis_fixwetlandsGB.tif")
-#r14scb <- #Load the processed 2014 veg raster
-#  raster("./Processed Data/Classified Images/Final rasters/2014_raster_match_SCB_analysis.tif")
+r14scb <- #Load the processed 2014 veg raster, before G fixed wetlands
+  raster("./Processed Data/Classified Images/Final rasters/2014_raster_match_SCB_analysis.tif")
 perims <- readOGR("./Processed Data/GIS/Sugarloaf Fires 1973-2003.shp")
 
 ###Process data
 #Tip: http://r-sig-geo.2731867.n2.nabble.com/Efficient-way-to-obtain-gridded-count-of-overlapping-polygons-td6034590.html
-perims2 <- spTransform(perims, CRSobj = crs(r73scb)) #reproject perimeters
-#plot(perims2, add=T) #Confirm alignment
+perims <- spTransform(perims, CRSobj = crs(r73scb)) #reproject perimeters
+#plot(perims, add=T) #Confirm alignment
 r73_pts <- rasterToPoints(r73scb,spatial=TRUE)
 r14_pts <- rasterToPoints(r14scb,spatial=TRUE)
+
+##Below code identifies four missing values from revised layer and inserts them
+##Only need to run once?
+vals14<- na.exclude(getValues(r14scb))
+vals14_new <- na.exclude(getValues(r14scb_new))
+tmp <- vals14 - vals14_new
+which(tmp!=0)
+vals14[1715:1730]
+vals14_new[1715:1730]
+#missing new value 1 = #1717 (should be 4)
+vals14_new <- c(vals14_new[1:1716],4,vals14_new[1717:length(vals14_new)])
+tmp <- vals14 - vals14_new
+which(tmp!=0)
+#missing old value 1 = #1862 (should be 4)
+vals14[1860:1880]
+vals14_new[1860:1880]
+vals14_new <- c(vals14_new[1:1861],4,vals14_new[1862:length(vals14_new)])
+tmp <- vals14 - vals14_new
+which(tmp!=0)
+#missing old value 1 = #17301 (should be 4)
+vals14[17300:17310]
+vals14_new[17300:17310]
+vals14_new <- c(vals14_new[1:17300],4,vals14_new[17301:length(vals14_new)])
+tmp <- vals14 - vals14_new
+which(tmp!=0)
+#missing old value 1 = #17501 (should be 4)
+vals14[17500:17520]
+vals14_new[17500:17520]
+vals14_new <- c(vals14_new[1:17500],4,vals14_new[17501:length(vals14_new)])
+tmp <- vals14 - vals14_new
+which(tmp!=0)
+vals14[which(tmp!=0)]
+vals14_new[which(tmp!=0)]
+tmp <- getValues(r14scb)
+blank <- rep(NA,length(tmp))
+blank[which(!is.na(tmp))] <- vals14_new
+tmp <- setValues(r14scb, blank)
+#writeRaster(tmp,"./Processed Data/Classified Images/Final rasters/2014_raster_match_SCB_analysis.tif") 
+
+which(tmp!=0)
+getValues(r14scb)[which(tmp!=0)]
+getValues(r14scb_old)[which(tmp!=0)]
+#r73_tmp <- resample(r73scb,r14scb,method = "ngb")
+#r73_pts_tmp <- rasterToPoints(r73_tmp,spatial=TRUE)
+
+#tmp <- setValues(r14scb,getValues(r14scb_new))
+r14_pts_new <- rasterToPoints(r14scb_new,spatial=TRUE)
+
+
+r14_pts$n_fires <- r73_pts$n_fires <- #test alignment
+  sapply(over(r73_pts, geometry(perims), returnList = TRUE), length)
+r14_pts_old$n_fires <- r73_pts$n_fires <- #test alignment
+  sapply(over(r73_pts, geometry(perims), returnList = TRUE), length)
+r14_pts_tmp$n_fires <- r73_pts$n_fires <-  #test alignment
+  sapply(over(r73_pts, geometry(perims), returnList = TRUE), length)
+
+
+##
+
 r14_pts$n_fires <- r73_pts$n_fires <- #Count number of overlapping fires
-  sapply(over(r73_pts, geometry(perims2), returnList = TRUE), length) #START HERE, error due to fixwetlandsGB file?
+  sapply(over(r73_pts, geometry(perims), returnList = TRUE), length)
 r73_pts$n_fires[r73_pts$n_fires > 2] <- #93 pixels had 4 fires, small n. 1360 pixels had 3 fires, chi-squared test was not converging. Converting to 3+4 burns to 2.
   2 #93 pixels at 0.16 ha/pixel = 14.88 ha
 r14_pts$n_fires[r14_pts$n_fires > 2] <- #93 pixels had 4 fires, small n. Converting to 3.
   2
 
 ###Plot
-#spplot(r73_pts["n_fires"], sp.layout=list("sp.polygons", perims2, first=F)) #Option to plot w perims, don't use if gridded = TRUE
+#spplot(r73_pts["n_fires"], sp.layout=list("sp.polygons", perims, first=F)) #Option to plot w perims, don't use if gridded = TRUE
 gridded(r73_pts) <- TRUE #For more efficient plotting, converts to "SpatialPixels"
 pdf("../../GIS/Base Layers/TimesBurned.pdf", width = 3, height = 4)
 spplot(r73_pts["n_fires"],
