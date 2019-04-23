@@ -513,11 +513,11 @@ r14_pts <- rasterToPoints(r14scb,spatial=TRUE)
 
 r14_pts$n_fires <- r73_pts$n_fires <- #Count number of overlapping fires
   sapply(over(r73_pts, geometry(perims), returnList = TRUE), length)
-r73_pts$n_fires[r73_pts$n_fires > 2] <- #93 pixels had 4 fires, small n. 1360 pixels had 3 fires, chi-squared test was not converging. Converting to 3+4 burns to 2.
-  2 #93 pixels at 0.16 ha/pixel = 14.88 ha
-r14_pts$n_fires[r14_pts$n_fires > 2] <- #93 pixels had 4 fires, small n. Converting to 3.
-  2
-
+#93 pixels had 4 fires, small n (93 pixels at 0.16 ha/pixel = 14.88 ha). 1360 pixels had 3 fires, chi-squared test was not converging. Converting to 3+4 burns to 2. 
+r73_pts$n_fires[r73_pts$n_fires > 2] <- 2 
+r14_pts$n_fires[r14_pts$n_fires > 2] <- 2 
+tmp<-raster(r73_pts[])
+#writeRaster(gridded(r73_pts)["n_fires"],"./Processed Data/Classified Images/Final rasters/aerial_coverage.tif")
 ###Plot
 #spplot(r73_pts["n_fires"], sp.layout=list("sp.polygons", perims, first=F)) #Option to plot w perims, don't use if gridded = TRUE
 gridded(r73_pts) <- TRUE #For more efficient plotting, converts to "SpatialPixels"
