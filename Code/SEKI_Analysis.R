@@ -201,8 +201,8 @@ p4a<-
   scale_fill_manual(values = c("1970" = "#fdc086", "2017" = "#386cb0"))+
   labs(x = "", y = expression(atop("trees > 7.6 cm","trees" ~ha ^ -1)), 
                       fill = "year", title = "tree density") +
-  annotate(geom = "text", x = c(0,1,2), y = 370, label = p.labs, size = 6.5) +
-  annotate(geom = "text", x = c(2.5), y = 370, label = "a", size = 6.5) +
+  annotate(geom = "text", x = c(0,1,2), y = 360, label = p.labs, size = 6.5) +
+  annotate(geom = "text", x = c(2.5), y = 360, label = "a", size = 6.5) +
   theme_bw() +
   theme(legend.position = "none")
 
@@ -220,8 +220,8 @@ ggplot(subplots,
                position = position_dodge(width=0.95), width = 0.5) +
   scale_fill_manual(values = c("1970" = "#fdc086", "2017" = "#386cb0"))+
   labs(x = "", y = expression(m^2*ha^-1), fill = "year", title = "basal area") +
-  annotate(geom = "text", x = c(0,1,2), y = 70, label = p.labs, size = 6.5) +
-  annotate(geom = "text", x = c(2.5), y = 70, label = "b", size = 6.5) +
+  annotate(geom = "text", x = c(0,1,2), y = 65, label = p.labs, size = 6.5) +
+  annotate(geom = "text", x = c(2.5), y = 65, label = "b", size = 6.5) +
   theme_bw() + 
   theme(legend.position = "none")
 
@@ -233,9 +233,9 @@ p4c<-
   labs(x = "", y = expression(m^2*ha^-1), fill = "species:  ",
        subtitle = "basal area by species") +
   facet_wrap( ~ Burned, labeller = as_labeller(c(
-    "0" = "0 times burned", "1" = "1 time burned", "2" = "2 times burned")
+    "0" = "0 times \nburned", "1" = "1 time \nburned", "2" = "2 times \nburned")
     ))+
-  annotate(geom = "text", x = c(2.4), y = 43, label = c("", "", "c"), size = 6.5) +
+  annotate(geom = "text", x = c(2.4), y = 40, label = c("", "", "c"), size = 6.5) +
   theme_bw() +
   guides(fill = guide_legend(nrow = 2)) +
   theme(plot.subtitle = element_text(hjust = 0.5), legend.position = "none")
@@ -264,8 +264,8 @@ p4d<-
   scale_fill_manual(values = c("1970" = "#fdc086", "2017" = "#386cb0"))+
   labs(x = "", y = expression(atop("trees > 15.2 cm","trees" ~ha ^ -1)), 
        fill = "year", main = "tree density") +
-  annotate(geom = "text", x = c(0,1,2), y = 370, label = p.labs, size = 6.5) +
-  annotate(geom = "text", x = c(2.5), y = 370, label = "d", size = 6.5) +
+  annotate(geom = "text", x = c(0,1,2), y = 360, label = p.labs, size = 6.5) +
+  annotate(geom = "text", x = c(2.5), y = 360, label = "d", size = 6.5) +
   theme_bw()+
   theme(legend.position = "none")
 
@@ -285,8 +285,8 @@ p4e<-
                position = position_dodge(width=0.95), width = 0.5) +
   scale_fill_manual(values = c("1970" = "#fdc086", "2017" = "#386cb0"))+
   labs(x = "", y = expression(m^2*ha^-1), fill = "year") +
-  annotate(geom = "text", x = c(0,1,2), y = 70, label = p.labs, size = 6.5) +
-  annotate(geom = "text", x = c(2.5), y = 70, label = "e", size = 6.5) +
+  annotate(geom = "text", x = c(0,1,2), y = 65, label = p.labs, size = 6.5) +
+  annotate(geom = "text", x = c(2.5), y = 65, label = "e", size = 6.5) +
   theme_bw()+
   theme(legend.position = "none")
 
@@ -297,7 +297,7 @@ p4f<-
                                "PICO" = "#f4a582", "PIJE" = "#e66101"))+
   labs(x = "", y = expression(m^2*ha^-1), fill = "species:  ") +
   facet_wrap( ~ Burned)+
-  annotate(geom = "text", x = c(2.4), y = 43, label = c("", "", "f"), size = 6.5) +
+  annotate(geom = "text", x = c(2.4), y = 40, label = c("", "", "f"), size = 6.5) +
   theme_bw() +
   guides(fill = guide_legend(nrow = 2)) +
   theme(legend.position = "none")
@@ -319,8 +319,8 @@ p4g<-
   scale_fill_manual(values = c("1970" = "#fdc086", "2017" = "#386cb0"))+
   labs(x = "", y = expression(atop("trees > 61 cm","trees" ~ha ^ -1)), 
        fill = "year", main = "tree density") +
-  annotate(geom = "text", x = c(0,1,2), y = 100, label = p.labs, size = 6.5) +
-  annotate(geom = "text", x = c(2.5), y = 100, label = "g", size = 6.5) +
+  annotate(geom = "text", x = c(0,1,2), y = 50, label = p.labs, size = 9.5) +
+  annotate(geom = "text", x = c(2.5), y = 90, label = "g", size = 6.5) +
   theme_bw()+
   theme(legend.position = "none")
 
@@ -340,8 +340,8 @@ p4h<-
                position = position_dodge(width=0.95), width = 0.5) +
   scale_fill_manual(values = c("1970" = "#fdc086", "2017" = "#386cb0"))+
   labs(x = "", y = expression(m^2*ha^-1), fill = "year") +
-  annotate(geom = "text", x = c(0,1,2), y = 70, label = p.labs, size = 6.5) +
-  annotate(geom = "text", x = c(2.5), y = 70, label = "h", size = 6.5) +
+  annotate(geom = "text", x = c(0,1,2), y = 30, label = p.labs, size = 9.5) +
+  annotate(geom = "text", x = c(2.5), y = 65, label = "h", size = 6.5) +
   theme_bw()+
   theme(legend.position = "none")
 
@@ -352,7 +352,7 @@ p4i<-
                                "PICO" = "#f4a582", "PIJE" = "#e66101"))+
   labs(x = "", y = expression(m^2*ha^-1), fill = "species:  ") +
   facet_wrap( ~ Burned)+
-  annotate(geom = "text", x = c(2.4), y = 43, label = c("", "", "i"), size = 6.5) +
+  annotate(geom = "text", x = c(2.4), y = 40, label = c("", "", "i"), size = 6.5) +
   theme_bw() +
   guides(fill = guide_legend(nrow = 2)) +
   theme(legend.position = "none")
@@ -374,8 +374,8 @@ p4j<-
   scale_fill_manual(values = c("1970" = "#fdc086", "2017" = "#386cb0"))+
   labs(x = "times burned", y = expression(atop("trees > 100 cm","trees" ~ha ^ -1)), 
        fill = "year", main = "tree density") +
-  annotate(geom = "text", x = c(0,1,2), y = 50, label = p.labs, size = 6.5) +
-  annotate(geom = "text", x = c(2.5), y = 50, label = "j", size = 6.5) +
+  annotate(geom = "text", x = c(0,1,2), y = 30, label = p.labs, size = 9.5) +
+  annotate(geom = "text", x = c(2.5), y = 45, label = "j", size = 6.5) +
   theme_bw()+
   theme(legend.position = "none")
 
@@ -395,10 +395,10 @@ p4k<-
                position = position_dodge(width=0.95), width = 0.5) +
   scale_fill_manual(values = c("1970" = "#fdc086", "2017" = "#386cb0"))+
   labs(x = "times burned", y = expression(m^2*ha^-1), fill = "year") +
-  annotate(geom = "text", x = c(0,1,2), y = 70, label = p.labs, size = 6.5) +
-  annotate(geom = "text", x = c(2.5), y = 70, label = "k", size = 6.5) +
+  annotate(geom = "text", x = c(0,1,2), y = 30, label = p.labs, size = 9.5) +
+  annotate(geom = "text", x = c(2.5), y = 65, label = "k", size = 6.5) +
   theme_bw()+
-  theme(legend.position = c(0.6, 0.6))
+  theme(legend.position = c(0.2, 0.78))
 
 p4l<- 
   ggplot(subplots_ba_spp_100, aes(x = factor(Year), y = ba_spp, fill = Species)) +
@@ -407,7 +407,7 @@ p4l<-
                                "PICO" = "#f4a582", "PIJE" = "#e66101"))+
   labs(x = "year", y = expression(m^2*ha^-1), fill = "species:  ") +
   facet_wrap( ~ Burned)+
-  annotate(geom = "text", x = c(2.4), y = 43, label = c("", "", "l"), size = 6.5) +
+  annotate(geom = "text", x = c(2.4), y = 40, label = c("", "", "l"), size = 6.5) +
   theme_bw() +
   guides(fill = guide_legend(nrow = 2)) +
   theme(legend.position = c(0.62,0.65), legend.title = element_text(size = 7),
@@ -507,7 +507,6 @@ perims <- readOGR("./Processed Data/GIS/Sugarloaf Fires 1973-2003.shp")
 ###Process data
 #Tip: http://r-sig-geo.2731867.n2.nabble.com/Efficient-way-to-obtain-gridded-count-of-overlapping-polygons-td6034590.html
 perims <- spTransform(perims, CRSobj = crs(r73scb)) #reproject perimeters
-#plot(perims, add=T) #Confirm alignment
 r73_pts <- rasterToPoints(r73scb,spatial=TRUE)
 r14_pts <- rasterToPoints(r14scb,spatial=TRUE)
 
@@ -516,12 +515,13 @@ r14_pts$n_fires <- r73_pts$n_fires <- #Count number of overlapping fires
 #93 pixels had 4 fires, small n (93 pixels at 0.16 ha/pixel = 14.88 ha). 1360 pixels had 3 fires, chi-squared test was not converging. Converting to 3+4 burns to 2. 
 r73_pts$n_fires[r73_pts$n_fires > 2] <- 2 
 r14_pts$n_fires[r14_pts$n_fires > 2] <- 2 
-tmp<-raster(r73_pts[])
-#writeRaster(gridded(r73_pts)["n_fires"],"./Processed Data/Classified Images/Final rasters/aerial_coverage.tif")
+length(r73_pts$n_fires[r73_pts$n_fires==0])* 0.16 #Area unburned
+length(r73_pts$n_fires[r73_pts$n_fires==1])* 0.16 #Area burning once
+length(r73_pts$n_fires[r73_pts$n_fires==2])* 0.16 #Area burning twice or more
 ###Plot
 #spplot(r73_pts["n_fires"], sp.layout=list("sp.polygons", perims, first=F)) #Option to plot w perims, don't use if gridded = TRUE
 gridded(r73_pts) <- TRUE #For more efficient plotting, converts to "SpatialPixels"
-pdf("../../GIS/Base Layers/TimesBurned.pdf", width = 3, height = 4)
+#pdf("../../GIS/Base Layers/TimesBurned.pdf", width = 3, height = 4)
 spplot(r73_pts["n_fires"],
        col.regions = c("#0eb8f0", "#ffffbf", "#ff7f00","#ff7f00"),
        #col.regions = rainbow(100, start = 4/6, end = 1),
@@ -534,11 +534,11 @@ spplot(r73_pts["n_fires"],
        main = "times burned 1973-2003"
        ) # "#0eb8f0", "#ffffbf", "#ff7f00"
 #grid.text("times burned", x=unit(0.9, "npc"), y=unit(0.98, "npc"))
-dev.off()
+#dev.off()
 
 #r <- raster(r73_pts, "n_fires") #Only need to do once.
 #p <- rasterToPolygons(r, dissolve = TRUE)
-#writeOGR(p,"../../GIS/Raw Data/Sugarloaf Fire Perimeters","Nburned", driver = "ESRI Shapefile")
+#writeOGR(p,"../../GIS/Raw Data/Sugarloaf Fire Perimeters","Nburned", driver = "ESRI Shapefile", overwrite_layer = TRUE)
 ####2c. Analysis####
 
 ###Set up change analysis
@@ -571,12 +571,6 @@ for(s in scenarios){
   if(s == "two burns"){
     v73 <- getValues(r73scb)[which(r73_pts$n_fires==2)]
     v14 <- getValues(r14scb)[which(r14_pts$n_fires==2)]
-    sum_table$pix_73 <- as.vector(table(v73[v73!=3 & v73!=5]))
-    sum_table$pix_14 <- as.vector(table(v14[v14!=3 & v14!=5]))
-  }
-  if(s == "three burns"){
-    v73 <- getValues(r73scb)[which(r73_pts$n_fires==3)]
-    v14 <- getValues(r14scb)[which(r14_pts$n_fires==3)]
     sum_table$pix_73 <- as.vector(table(v73[v73!=3 & v73!=5]))
     sum_table$pix_14 <- as.vector(table(v14[v14!=3 & v14!=5]))
   }
@@ -617,13 +611,8 @@ for(s in scenarios){
     }
   } ##End expected matrix loop
   
-  
-  #for(i in 1:ncol(change_mat_total)){
-  #  change_mat_total[i,i] <- NA
-  #} #Deprecated?
-  
-  X2 <- chisq.test(as.vector(change_mat_total[[s]]), 
-                    p = as.vector(change_mat_exp[[s]]/sum(change_mat_exp[[s]])))
+  X2 <- chisq.test(as.vector(change_mat_total[[s]])+1, #+1 to deal with convergence issues at 0's
+                    p = as.vector((change_mat_exp[[s]]+1)/sum(change_mat_exp[[s]]+1)))
   print(X2)
   #deviance_ha <- round((change_mat_total[[s]]-change_mat_exp[[s]]) *0.16)  #0.16 ha/pixel
   deviance_prop <- (change_mat_total[[s]]-change_mat_exp[[s]]) / (change_mat_exp[[s]]+1)
@@ -633,12 +622,6 @@ for(s in scenarios){
   deviance_prop_melt[[s]]$Y1973 <- 
     factor(deviance_prop_melt[[s]]$Y1973, rev(levels(deviance_prop_melt[[s]]$Y1973) ) )
   deviance_prop_melt[[s]]$cells <- melt(change_mat_total[[s]])$value
-  #Deprecated:
-  #cp <- corrplot(deviance_ha, is.corr = FALSE)
-  #gcp <- ggcorrplot(deviance_ha)
-  #t <- tableHTML(change_mat_total)
-  #t_grob <- tableGrob(change_mat_total)
-  #grid.arrange(t_grob,ncol=1)
   #  ##Print Output
   #write_tableHTML(t,file = paste0("./Tables/Table1_",s,".html"))
   
@@ -646,9 +629,11 @@ for(s in scenarios){
   gcp[[s]] <- ggplot(deviance_prop_melt[[s]],aes(Y2014,Y1973)) +
     geom_tile(aes(fill = residual_prop),colour = "white") +
     geom_text(aes(label = cells)) +
-    scale_fill_gradientn(colors = c("darkred", "white","darkblue"), limits = c(-1,1)) +
+    scale_fill_gradientn(name = "residual \nproportion", 
+                         colors = c("darkred", "white","darkblue"), 
+                         limits = c(-1,1)) +
     theme_grey(base_size = 9) + 
-    labs(title = s)+
+    labs(title = s) +
     scale_x_discrete(position = "top") +
     theme(axis.ticks = element_blank(), axis.text.x = element_text(
       size = 9 *0.8, angle = 45, hjust = 0, colour = "grey50"))
