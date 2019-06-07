@@ -14,9 +14,9 @@ AddGhosts <- function(SoilM){
     npts<-length(SoilM$Soil_Sat)
 
     SubMat<-SoilM[SoilM$SubSite==i,]
-    YrsEarlySummer<-unique(SubMat$Year[SubMat$DOY<180])
+    YrsEarlySummer<-unique(SubMat$Year[SubMat$DOY<190])
     NYES<-length(YrsEarlySummer)
-    YrsLateSummer<-unique(SubMat$Year[SubMat$DOY>180])
+    YrsLateSummer<-unique(SubMat$Year[SubMat$DOY>190])
     NYLS<-length(YrsLateSummer)
     #if(NYLS==0){}
     #if(NYES==0){}

@@ -19,7 +19,7 @@ library(Hmisc)
 library(plyr)
 library(xts)
 library(hydroGOF)
-library(tiff)
+#library(tiff)
 
 #Load data
 SoilM <- read.csv('../Raw Data/Soil Moisture/SoilMoisture_SEKI_Combined_GISextract.csv',header=TRUE)    #('SoilMoistureMATLAB_All_10_02_15.csv')
@@ -137,6 +137,7 @@ hist(thetaM)
 
 #Add Ghost Sites 
 if(Ghost){
+  SoilM$VWC<-thetaM
 SoilM_o = SoilM #Hold a copy of original data
 source("AddGhosts.R")
 SoilM<-AddGhosts(SoilM)
@@ -205,7 +206,7 @@ sum((abs(CM)>.4)&(CM<1))/2
 
 #SoilM1<-SoilM[SoilM$Year==2016,c(12:14,32:43)]
 
-cor(SoilM1)
+#cor(SoilM1)
 
 
 #EarlyInd<-(SoilM$DOY<=160)
@@ -272,6 +273,7 @@ SoilM$Upslope.Area[SoilM$flow_acc_d>5000]=5000
 #SoilM$TopInd<-(.5*SoilM$TPI300m+.3*SoilM$Slope-0.2*SoilM$Upslope.Area)
 
 sum(is.na(SoilM$Dist_From_River))
+
 Tfit<-randomForest(VWC~Veg+Veg73+Year+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m+TWI.10m+Time_Since_Fire+Fire_Num+SevNum+Elevation+Dist_From_River,data=SoilM,nodesize=5,ntree=500)
 
 
@@ -309,15 +311,15 @@ if(Extrap){
   plot(PredUnburned,PredToday)
   
   Fchange<-(SoilMbig$Veg73!=as.factor(SoilMbig$Veg14))
-  plot(PredUnburned[Fchange],PredToday[Fchange],xlab="Modeled Unburned Soil Moisture (%)",ylab="Modeled Actual Soil Moisture (%)",main="June 2018")
+  plot(PredUnburned[Fchange],PredToday[Fchange],xlab="Modeled Unburned Soil Moisture (%)",ylab="Modeled Actual Soil Moisture (%)",main="June 2018",xlim=c(3,45),ylim=c(3,45))
   points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==6],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==6],pch=15,col='blue') #Con-Wet
   points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==2],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==2],pch=16,col='grey') #Con-Sparse
   points(PredUnburned[SoilMbig$Veg73=='6'&SoilMbig$Veg14==4],PredToday[SoilMbig$Veg73=='6'&SoilMbig$Veg14==4],pch=17,col=rgb(.2,.75,.2)) #Wet-Con
   points(PredUnburned[SoilMbig$Veg73=='4'&SoilMbig$Veg14==1],PredToday[SoilMbig$Veg73=='4'&SoilMbig$Veg14==1],pch=18,col='brown') #Con-Shrub
-  lines(c(5,45),c(5,45),lty=2,lwd=2)
-  legend(5,40,c("Conifer - Dense Mdw.","Conifer - Sparse Mdw.","Conifer-Shrub","Dense Mdw. - Conifer","Other"),pch=c(15,16,18,17,1),col=c("blue","grey","brown",rgb(.2,.75,.2),"black"))
+  lines(c(3,45),c(3,45),lty=2,lwd=2)
+  legend(3,43,c("Conifer - Dense Mdw.","Conifer - Sparse Mdw.","Conifer-Shrub","Dense Mdw. - Conifer","Other"),pch=c(15,16,18,17,1),col=c("blue","grey","brown",rgb(.2,.75,.2),"black"))
   
-  hist(PredToday[Fchange]-PredUnburned[Fchange],breaks=seq(-3.75,3.75,.5),main="June 2018",xlab="Actual-Unburned Soil Moisture (%)")
+  hist(PredToday[Fchange]-PredUnburned[Fchange],breaks=seq(-4.25,3.75,.5),main="June 2018",xlab="Actual-Unburned Soil Moisture (%)")
   hist(100*(PredToday[Fchange]-PredUnburned[Fchange])/PredUnburned[Fchange],breaks=seq(-62.5,62.5,5),main="July 2016",xlab="% Change in Actual-Unburned Soil Moisture")
   mean(PredToday[Fchange]-PredUnburned[Fchange])
 }
@@ -540,6 +542,7 @@ length(Trny)/length(thetaM) #Proportion of msmts used in training
 #Tfit<-randomForest(VWC~Veg14b+Year+DOY+Upslope.Area+Slope+Aspect+TPI300m+TWI.10m+Dist.from.River+Time.Since.Fire+Times.Burned+SevNum+Elev,data=SoilM,subset=Trn,nodesize=5,ntree=500)
 
 Tfit<-randomForest(VWC~Veg+Veg73+Year+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m+TWI.10m+Time_Since_Fire+Fire_Num+SevNum+Elevation+Dist_From_River,data=SoilM,subset=Trn,nodesize=5,ntree=500)
+#No Fire or Year: Tfit<-randomForest(VWC~Veg+Veg73+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m+TWI.10m+Elevation+Dist_From_River,data=SoilM,subset=Trn,nodesize=5,ntree=500)
 
 
 if(g==1 || g==NumSamps){
