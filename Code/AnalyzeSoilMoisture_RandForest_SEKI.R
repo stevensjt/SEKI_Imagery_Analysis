@@ -281,7 +281,11 @@ imp=Tfit$importance
 barplot(xlab='Variable',ylab='Importance',names.arg=rownames(imp)[order(imp[, 1], decreasing=TRUE)],height=imp[order(imp[, 1], decreasing=TRUE),1],cex.names=.5)
 
 a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Veg',ylab='VWC')
-#barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
+barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Year',ylab='VWC',main='Modeled Effect of Variable on VWC')
+
+a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Time.Since.Fire',ylab='VWC') #TWI.10m, TPI300m, ='Dist.from.River')
+plot(a$x,.01*a$y,ylim=c(0,.2),lwd=2,xlab='Years Since Fire',ylab='Mean VWC',main='Modeled Effect of Variable on VWC',type='l')
+points(a$x,.01*a$y)
 
 if(Extrap){
   SoilMbig$Year=factor(2018,levels=levels(SoilM$Year))
