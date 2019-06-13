@@ -280,15 +280,15 @@ Tfit<-randomForest(VWC~Veg+Veg73+Year+DOY+Upslope.Area+slope_deg+Aspect+tpi_300m
 imp=Tfit$importance
 barplot(xlab='Variable',ylab='Importance',names.arg=rownames(imp)[order(imp[, 1], decreasing=TRUE)],height=imp[order(imp[, 1], decreasing=TRUE),1],cex.names=.5)
 
-a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Veg73',ylab='VWC')
-barplot(a$y,names=a$x,xlab='Year',ylab='VWC',main='Modeled Effect of Variable on VWC')
-barplot(a$y[order(a$y, decreasing=FALSE)],names=a$x[order(a$y, decreasing=FALSE)],xlab='Year',ylab='VWC',main='Modeled Effect of Variable on VWC')
-barplot(a$y[order(c(3,1,2,4))],names=a$x[order(c(3,1,2,4))],xlab='Year',ylab='VWC',main='Modeled Effect of Variable on VWC')
+a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Year',ylab='VWC')
+barplot(a$y,names=a$x,xlab='',ylab='VWC',ylim=c(0,20))
+barplot(a$y[order(a$y, decreasing=FALSE)],names=a$x[order(a$y, decreasing=FALSE)],ylim=c(0,20),xlab='',ylab='VWC')
+barplot(a$y[c(3,1,2,4)],names=a$x[c(3,1,2,4)],xlab='Year',ylab='VWC',ylim=c(0,20))
 
 
-a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Time.Since.Fire',ylab='VWC') #TWI.10m, TPI300m, ='Dist.from.River')
-plot(a$x,a$y,ylim=c(0,.2),lwd=2,xlab='Years Since Fire',ylab='Mean VWC',main='Modeled Effect of Variable on VWC',type='l')
-points(a$x,.01*a$y)
+a=partialPlot(x=Tfit,pred.data=SoilM,x.var='Upslope.Area',ylab='VWC',ylim=c(0,20)) #TWI.10m, TPI300m, ='Dist.from.River')
+#plot(a$x,a$y,ylim=c(0,20),lwd=2,xlab='Years Since Fire',ylab='Mean VWC',main='Modeled Effect of Variable on VWC',type='l')
+points(a$x,a$y)
 
 if(Extrap){
   SoilMbig$Year=factor(2018,levels=levels(SoilM$Year))
