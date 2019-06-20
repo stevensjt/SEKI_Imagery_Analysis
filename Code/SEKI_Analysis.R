@@ -555,24 +555,28 @@ for(s in scenarios){
     v14 <- getValues(r14scb)
     sum_table$pix_73 <- as.vector(table(v73[v73!=3 & v73!=5]))
     sum_table$pix_14 <- as.vector(table(v14[v14!=3 & v14!=5]))
+    l = "a"
   }
   if(s == "no burns"){
     v73 <- getValues(r73scb)[which(r73_pts$n_fires==0)]
     v14 <- getValues(r14scb)[which(r14_pts$n_fires==0)]
     sum_table$pix_73 <- as.vector(table(v73[v73!=3 & v73!=5]))
     sum_table$pix_14 <- as.vector(table(v14[v14!=3 & v14!=5]))
+    l = "b"
   }
   if(s == "one burn"){
     v73 <- getValues(r73scb)[which(r73_pts$n_fires==1)]
     v14 <- getValues(r14scb)[which(r14_pts$n_fires==1)]
     sum_table$pix_73 <- as.vector(table(v73[v73!=3 & v73!=5]))
     sum_table$pix_14 <- as.vector(table(v14[v14!=3 & v14!=5]))
+    l = "c"
   }
   if(s == "two burns"){
     v73 <- getValues(r73scb)[which(r73_pts$n_fires==2)]
     v14 <- getValues(r14scb)[which(r14_pts$n_fires==2)]
     sum_table$pix_73 <- as.vector(table(v73[v73!=3 & v73!=5]))
     sum_table$pix_14 <- as.vector(table(v14[v14!=3 & v14!=5]))
+    l = "d"
   }
   
   change_mat_total[[s]] <- matrix(nrow = 6, ncol = 6)
@@ -633,7 +637,7 @@ for(s in scenarios){
                          colors = c("darkred", "white","darkblue"), 
                          limits = c(-1,1)) +
     theme_grey(base_size = 9) + 
-    labs(title = s) +
+    labs(title = s, tag = l) +
     scale_x_discrete(position = "top") +
     theme(axis.ticks = element_blank(), axis.text.x = element_text(
       size = 9 *0.8, angle = 45, hjust = 0, colour = "grey50"))
@@ -641,10 +645,10 @@ for(s in scenarios){
   
 }##End scenario loop
 
-pdf("./Figures/MS/Fig3.pdf", width = 8, height = 6)
+#pdf("./Figures/MS/Fig3.pdf", width = 8, height = 6)
 grid.arrange(gcp[[1]], gcp[[2]], gcp[[3]], gcp[[4]], 
              ncol = 2)
-dev.off()
+#dev.off()
 
 
 
