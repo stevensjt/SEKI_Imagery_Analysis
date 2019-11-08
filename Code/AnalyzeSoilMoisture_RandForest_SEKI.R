@@ -365,7 +365,7 @@ a=partialPlot(x=Tfit,pred.data=SoilMpred,x.var='Veg',ylab='VWC')
 a$x
 TripVegMat[i,3:6]<-.01*a$y
 }
-barplot(as.matrix(TripVegMat[,3:6]),beside=TRUE,ylab='Mean Soil Moisture (VWC)',legend.text=c("June 2016","July 2016","June 2017","July 2017","June 2018"))
+barplot(100*as.matrix(TripVegMat[,3:6]),beside=TRUE,ylab='Mean Volumetric Water Content (%)',legend.text=c("June 2016","July 2016","June 2017","July 2017","June 2018"),names.arg = c("Dense Meadow","Conifer","Shrub","Sparse"))
 
 
 #Test alternate realities in terms of veg cover and fire history

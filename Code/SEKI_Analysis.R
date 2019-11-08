@@ -543,9 +543,9 @@ spplot(r73_pts["n_fires"],
 
 ###Set up change analysis
 sum_table <- 
-  data.frame(veg_type = c(
-    "shrub", "sparse meadow", "mixed conifer", "dense meadow"
-  ))
+  data.frame(
+    veg_type = c("shrub", "sparse meadow", "mixed conifer", "dense meadow")
+    )
 scenarios <- c("watershed","no burns", "one burn", "two burns")
 change_mat_total <- change_mat_exp <- gcp <- list()
 
@@ -590,11 +590,10 @@ for(s in scenarios){
       )
   }##End observed matrix loop
   
-  change_mat_total[[s]] <- change_mat_total[[s]][-c(3,5),-c(3,5)]
-  rownames(change_mat_total[[s]]) <- c("1973 shrub", "1973 sparse meadow", 
-                                  "1973 mixed conifer", "1973 dense meadow")
-  colnames(change_mat_total[[s]]) <- c("2014 shrub", "2014 sparse meadow", 
-                                  "2014 mixed conifer", "2014 dense meadow")
+  change_mat_total[[s]] <- change_mat_total[[s]][c(4,1,2,6),c(4,1,2,6)]
+  rownames(change_mat_total[[s]]) <- 
+    colnames(change_mat_total[[s]]) <- c("mixed \nconifer", "shrub", 
+                                         "sparse \nmeadow", "dense \nmeadow")
   change_mat_exp[[s]] <- change_mat_total[[s]]
   
   for(i in 1:4){ ##Expected matrix loop
@@ -630,22 +629,23 @@ for(s in scenarios){
   #write_tableHTML(t,file = paste0("./Tables/Table1_",s,".html"))
   
   #Plot
-  gcp[[s]] <- ggplot(deviance_prop_melt[[s]],aes(Y2014,Y1973)) +
+  gcp[[s]] <- 
+    ggplot(deviance_prop_melt[[s]],aes(Y2014,Y1973)) +
     geom_tile(aes(fill = residual_prop),colour = "white") +
     geom_text(aes(label = cells)) +
     scale_fill_gradientn(name = "residual \nproportion", 
-                         colors = c("darkred", "white","darkblue"), 
+                         colors = c("darkred", "white","cornflowerblue"), 
                          limits = c(-1,1)) +
-    theme_grey(base_size = 9) + 
-    labs(title = s, tag = l) +
+    theme_grey(base_size = 11) + 
+    labs(title = paste(l,"          ",s), x = "2014", y = 1973) +
     scale_x_discrete(position = "top") +
     theme(axis.ticks = element_blank(), axis.text.x = element_text(
-      size = 9 *0.8, angle = 45, hjust = 0, colour = "grey50"))
+      size = 11 *0.9, angle = 45, hjust = 0, colour = "grey50"))
   
   
 }##End scenario loop
 
-#pdf("./Figures/MS/Fig3.pdf", width = 8, height = 6)
+#pdf("./Figures/MS/FigC1.pdf", width = 8, height = 6)
 grid.arrange(gcp[[1]], gcp[[2]], gcp[[3]], gcp[[4]], 
              ncol = 2)
 #dev.off()
