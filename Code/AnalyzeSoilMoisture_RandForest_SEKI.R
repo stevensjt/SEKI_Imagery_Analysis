@@ -6,7 +6,7 @@
 AggData=1 #For grouping measurements that are the same veg type at the same site
 Ghost=0   #For adding in "ghost" measurements to counteract effects of missing data
 PICOsep=0  #For separating PICO from other conifers
-Extrap=1 #If want to extrapolate to other non-measured points
+Extrap=0 #If want to extrapolate to other non-measured points
 
 library(nlme) # fit regression w/ spatially correlated errors
 library(chron)
@@ -342,30 +342,74 @@ lines(c(0,.65),c(0,.65),col='red')
 
 
 #Separate by trip and veg
-TripVegMat<-data.frame(cbind(Year=as.factor(c(2016,2016,2017,2017,2018)),Trip=c(1,2,1,2,1)),DenseMeadow=c(1:5),MixCon=c(1:5),Shrub=c(1:5),Sparse=c(1:5))
+#TripVegMat<-data.frame(cbind(Year=as.factor(c(2016,2016,2017,2017,2018)),Trip=c(1,2,1,2,1)),DenseMeadow=c(1:5),MixCon=c(1:5),Shrub=c(1:5),Sparse=c(1:5))
+TripVegMat<-matrix(nrow=5,ncol=6)
+TripVegMat[,1]=c(2016,2016,2017,2017,2018)
+TripVegMat[,2]=c(1,2,1,2,1)
+TripVegMatSD<-TripVegMat
+TripVegMatMx<-TripVegMat
+TripVegMatMn<-TripVegMat
+TripVegMatObs<-TripVegMat
+
 if(AggData){SoilMpred<-SoilM}else{SoilMpred<-SoilM[,5:53]}
-SoilMpred<-SoilMpred[SoilMpred$Trip=='2017_Early',]
-TempFrYrs<-(SoilMpred$Time_Since_Fire-1)
+SoilMpred<-SoilMpred[SoilMpred$Trip=='2016_Early',] #2017_Early',] #Calculate across all sites that were measured in June 2017
+TempFrYrs<-(SoilMpred$Time_Since_Fire) #-1) use the -1 if use 2017 as base
 Yrs<-unique(SoilM$Year)
 #SoilMpred$DOY<-180
 #SoilMpred$Year<-2016
 #SoilMpred<-unique(SoilMpred) #DOESNT WORK. I THINK BECAUSE TIME SINCE FIRE IS TIED TO YEAR
 for (i in 1:5){
  Yr<-Yrs[ceiling(i/2)] 
- Trp<-TripVegMat$Trip[i]
+ Trp<-TripVegMat[i,2]
 SoilMpred$Year<-Yr
 if(Trp==1){Dt<-178}else{Dt<-205}
 SoilMpred$DOY<-Dt
 SoilMpred$Time_Since_Fire<-(TempFrYrs+ceiling(-1+i/2))
 SoilMpred$Time_Since_Fire[SoilMpred$Time_Since_Fire>90]<-100
-a=partialPlot(x=Tfit,pred.data=SoilMpred,x.var='Veg',ylab='VWC')
+
+#a=partialPlot(x=Tfit,pred.data=SoilMpred,x.var='Veg',ylab='VWC')
+#a$x
+#TripVegMat[i,3:6]<-.01*a$y
+a <- predict(Tfit,SoilMpred)
+TripVegMat[i,3]<-.01*mean(a[SoilMpred$Veg=='dense meadow'])
+ TripVegMatSD[i,3]<-.01*sd(a[SoilMpred$Veg=='dense meadow'])
+ TripVegMatMx[i,3]<-.01*max(a[SoilMpred$Veg=='dense meadow'])
+ TripVegMatMn[i,3]<-.01*min(a[SoilMpred$Veg=='dense meadow'])
+TripVegMat[i,4]<-.01*mean(a[SoilMpred$Veg=='mixed conifer'])
+ TripVegMatSD[i,4]<-.01*sd(a[SoilMpred$Veg=='mixed conifer'])
+ TripVegMatMx[i,4]<-.01*max(a[SoilMpred$Veg=='mixed conifer'])
+ TripVegMatMn[i,4]<-.01*min(a[SoilMpred$Veg=='mixed conifer'])
+TripVegMat[i,5]<-.01*mean(a[SoilMpred$Veg=='shrub'])
+ TripVegMatSD[i,5]<-.01*sd(a[SoilMpred$Veg=='shrub'])
+ TripVegMatMx[i,5]<-.01*max(a[SoilMpred$Veg=='shrub'])
+ TripVegMatMn[i,5]<-.01*min(a[SoilMpred$Veg=='shrub'])
+TripVegMat[i,6]<-.01*mean(a[SoilMpred$Veg=='sparse meadow'])
+ TripVegMatSD[i,6]<-.01*sd(a[SoilMpred$Veg=='sparse meadow'])
+ TripVegMatMx[i,6]<-.01*max(a[SoilMpred$Veg=='sparse meadow'])
+ TripVegMatMn[i,6]<-.01*min(a[SoilMpred$Veg=='sparse meadow'])
+
+ if(Trp==1){
+ TripVegMatObs[i,3]<-mean(SoilM$VWC[SoilM$Veg=='dense meadow' & SoilM$Year==Yr & SoilM$DOY<190])
+ TripVegMatObs[i,4]<-mean(SoilM$VWC[SoilM$Veg=='mixed conifer' & SoilM$Year==Yr & SoilM$DOY<190])
+ TripVegMatObs[i,5]<-mean(SoilM$VWC[SoilM$Veg=='shrub' & SoilM$Year==Yr & SoilM$DOY<190])
+ TripVegMatObs[i,6]<-mean(SoilM$VWC[SoilM$Veg=='sparse meadow' & SoilM$Year==Yr & SoilM$DOY<190])
+ }
+ else{
+   TripVegMatObs[i,3]<-mean(SoilM$VWC[SoilM$Veg=='dense meadow' & SoilM$Year==Yr & SoilM$DOY>190]) 
+   TripVegMatObs[i,4]<-mean(SoilM$VWC[SoilM$Veg=='mixed conifer' & SoilM$Year==Yr & SoilM$DOY>190])
+   TripVegMatObs[i,5]<-mean(SoilM$VWC[SoilM$Veg=='shrub' & SoilM$Year==Yr & SoilM$DOY>190])
+   TripVegMatObs[i,6]<-mean(SoilM$VWC[SoilM$Veg=='sparse meadow' & SoilM$Year==Yr & SoilM$DOY>190])
+ }
 # if(Trp==1){Dt<-(SoilM$DOY<190)}else{Dt<-SoilM$DOY>190}
 #a=partialPlot(x=Tfit,pred.data=SoilM[SoilM$Year==Yr & Dt,],x.var='Veg',ylab='VWC')  #If want to look at modeled means for only sites measured in each trip
 #barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
-a$x
-TripVegMat[i,3:6]<-.01*a$y
+
 }
-barplot(100*as.matrix(TripVegMat[,3:6]),beside=TRUE,ylab='Mean Volumetric Water Content (%)',legend.text=c("June 2016","July 2016","June 2017","July 2017","June 2018"),names.arg = c("Dense Meadow","Conifer","Shrub","Sparse"))
+bp<-barplot(100*as.matrix(TripVegMat[,3:6]),beside=TRUE,ylab='Mean Volumetric Water Content (%)',legend.text=c("June 2016","July 2016","June 2017","July 2017","June 2018"),names.arg = c("Dense Meadow","Conifer","Shrub","Sparse"),ylim=c(0,55))
+errbar(bp,NA*bp,100*(TripVegMatMx[,3:6]),100*(TripVegMatMn[,3:6]),add=TRUE)
+
+barplot(TripVegMatObs[,3:6],beside=TRUE,ylab='Observed Mean Volumetric Water Content (%)',legend.text=c("June 2016","July 2016","June 2017","July 2017","June 2018"),names.arg = c("Dense Meadow","Conifer","Shrub","Sparse"))
+
 
 
 #Test alternate realities in terms of veg cover and fire history
