@@ -405,8 +405,9 @@ TripVegMat[i,6]<-.01*mean(a[SoilMpred$Veg=='sparse meadow'])
 #barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
 
 }
-bp<-barplot(100*as.matrix(TripVegMat[,3:6]),beside=TRUE,ylab='Mean Volumetric Water Content (%)',legend.text=c("June 2016","July 2016","June 2017","July 2017","June 2018"),names.arg = c("Dense Meadow","Conifer","Shrub","Sparse"),ylim=c(0,55))
+bp<-barplot(100*as.matrix(TripVegMat[,3:6]),beside=TRUE,legend.text=c("June 2016","July 2016","June 2017","July 2017","June 2018"),names.arg = c("Dense Meadow","Conifer","Shrub","Sparse"),ylim=c(0,55))
 errbar(bp,NA*bp,100*(TripVegMatMx[,3:6]),100*(TripVegMatMn[,3:6]),add=TRUE)
+mtext("Mean Volumetric Water Content (%)", side=2, line=2.5, cex=1.3)
 
 barplot(TripVegMatObs[,3:6],beside=TRUE,ylab='Observed Mean Volumetric Water Content (%)',legend.text=c("June 2016","July 2016","June 2017","July 2017","June 2018"),names.arg = c("Dense Meadow","Conifer","Shrub","Sparse"))
 
