@@ -351,10 +351,15 @@ TripVegMatMx<-TripVegMat
 TripVegMatMn<-TripVegMat
 TripVegMatObs<-TripVegMat
 
+
+
 if(AggData){SoilMpred<-SoilM}else{SoilMpred<-SoilM[,5:53]}
 SoilMpred<-SoilMpred[SoilMpred$Trip=='2016_Early',] #2017_Early',] #Calculate across all sites that were measured in June 2017
 TempFrYrs<-(SoilMpred$Time_Since_Fire) #-1) use the -1 if use 2017 as base
 Yrs<-unique(SoilM$Year)
+
+nsites<-length(SoilMpred$VWC)
+AllModMat<-data.frame(Year=rep(0,5*nsites),DOY=rep(0,5*nsites),VWC=rep(0,5*nsites),Veg=rep(0,5*nsites))
 #SoilMpred$DOY<-180
 #SoilMpred$Year<-2016
 #SoilMpred<-unique(SoilMpred) #DOESNT WORK. I THINK BECAUSE TIME SINCE FIRE IS TIED TO YEAR
@@ -404,14 +409,28 @@ TripVegMat[i,6]<-.01*mean(a[SoilMpred$Veg=='sparse meadow'])
 #a=partialPlot(x=Tfit,pred.data=SoilM[SoilM$Year==Yr & Dt,],x.var='Veg',ylab='VWC')  #If want to look at modeled means for only sites measured in each trip
 #barplot(0.01*a$y,names=a$x,ylim=c(0,.2),xlab='Dominant Veg',ylab='Mean VWC',main='Modeled Effect of Variable on VWC')
 
+ AllModMat$Year[(1+nsites*(i-1)):(nsites*i)] <- Yr
+ AllModMat$DOY[(1+nsites*(i-1)):(nsites*i)] <- Dt
+ AllModMat$VWCmod[(1+nsites*(i-1)):(nsites*i)] <- a
+ AllModMat$Veg[(1+nsites*(i-1)):(nsites*i)] <-SoilMpred$Veg
 }
+
+AllModMat$Trip <- (AllModMat$Year+2015+AllModMat$DOY/365)
+
 bp<-barplot(100*as.matrix(TripVegMat[,3:6]),beside=TRUE,legend.text=c("June 2016","July 2016","June 2017","July 2017","June 2018"),names.arg = c("Dense Meadow","Conifer","Shrub","Sparse"),ylim=c(0,55))
 errbar(bp,NA*bp,100*(TripVegMatMx[,3:6]),100*(TripVegMatMn[,3:6]),add=TRUE)
 mtext("Mean Volumetric Water Content (%)", side=2, line=2.5, cex=1.3)
 
 barplot(TripVegMatObs[,3:6],beside=TRUE,ylab='Observed Mean Volumetric Water Content (%)',legend.text=c("June 2016","July 2016","June 2017","July 2017","June 2018"),names.arg = c("Dense Meadow","Conifer","Shrub","Sparse"))
 
+boxplot(VWCmod~Trip+Veg,data=AllModMat,ann=FALSE,col=gray.colors(5,start=.3, end=.95),at=c(1:5,7:11,13:17,19:23),xaxt="n",names=c("","","Dense Meadow","","","","","Conifer","","","","","Shrub","","","","","Sparse","",""))
+mtext("Volumetric Water Content (%)", side=2, line=2.5, cex=1.4)
+mtext(at=c(3,9,15,21),c("Dense Meadow","Conifer","Shrub","Sparse"), side=1, line=0.6, cex=1.3)
+points(x=c(1:5,7:11,13:17,19:23),y=100*TripVegMat[,3:6],pch=15)
 
+legend(16,50,c("June 2016","July 2016","June 2017","July 2017","June 2018"),fill=gray.colors(5,start=.3, end=.95))
+
+  
 
 #Test alternate realities in terms of veg cover and fire history
 SoilM_allburn<-SoilM
