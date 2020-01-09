@@ -425,7 +425,7 @@ barplot(TripVegMatObs[,3:6],beside=TRUE,ylab='Observed Mean Volumetric Water Con
 
 boxplot(VWCmod~Trip+Veg,data=AllModMat,ann=FALSE,col=gray.colors(5,start=.3, end=.95),at=c(1:5,7:11,13:17,19:23),xaxt="n",names=c("","","Dense Meadow","","","","","Conifer","","","","","Shrub","","","","","Sparse","",""))
 mtext("Volumetric Water Content (%)", side=2, line=2.5, cex=1.4)
-mtext(at=c(3,9,15,21),c("Dense Meadow","Conifer","Shrub","Sparse"), side=1, line=0.6, cex=1.3)
+mtext(at=c(3,9,15,21),c("Dense Meadow","Conifer","Shrub","Sparse"), side=1, line=0.6, cex=1.2)
 points(x=c(1:5,7:11,13:17,19:23),y=100*TripVegMat[,3:6],pch=15)
 
 legend(16,50,c("June 2016","July 2016","June 2017","July 2017","June 2018"),fill=gray.colors(5,start=.3, end=.95))
