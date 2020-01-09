@@ -354,7 +354,8 @@ TripVegMatObs<-TripVegMat
 
 
 if(AggData){SoilMpred<-SoilM}else{SoilMpred<-SoilM[,5:53]}
-SoilMpred<-SoilMpred[SoilMpred$Trip=='2016_Early',] #2017_Early',] #Calculate across all sites that were measured in June 2017
+SoilMpred<-SoilMpred[SoilMpred$Trip=='2016_Early' | (SoilMpred$Site=='GBW7') | ((SoilMpred$Trip=='2017_Early')&((SoilMpred$Site=='HighSevDryMET')|(SoilMpred$Site=='HighSevWetMET')|(SoilMpred$Site=='LowSevMET'))),] #2017_Early',] #Calculate across all sites that were measured in June 2017
+
 TempFrYrs<-(SoilMpred$Time_Since_Fire) #-1) use the -1 if use 2017 as base
 Yrs<-unique(SoilM$Year)
 
