@@ -1,1 +1,7 @@
+ICB folder contains weather station data for Illilouette Creek Basin, where 
+File A1=forest station, B1=shrub station, and C1=wetland station
 
+SCB folder contains weather station data for Sugarloaf Creek Basin, where 
+File D1=shrub station, E1=forest station, and F1=wetland station
+
+Weather.Station.Metadata.docx file contains definitions of variables collected by the stations along with units
