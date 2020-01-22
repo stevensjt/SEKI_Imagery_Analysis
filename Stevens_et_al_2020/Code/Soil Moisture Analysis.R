@@ -13,8 +13,9 @@
 library(chron) #for years(); version 2.3-54
 library(randomForest) #for randomForest(); version 4.6-14
 library(Hmisc) #for errbar(); version 4.2-0
-#library(matrixStats) #for rowSds()
-#library(hydroGOF) #for rmse()
+library(matrixStats) #for rowSds()
+library(hydroGOF) #for rmse()
+library(MASS) #for truehist()
 
 
 AggData <- 1 #For grouping measurements that are the same veg type at the same site
