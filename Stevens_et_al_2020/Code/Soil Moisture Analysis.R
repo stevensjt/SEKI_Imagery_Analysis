@@ -23,15 +23,15 @@ Extrap <- #Set to "1" if want to extrapolate to other non-measured points.
   1 
 Validate <- #Set to "1" if want to run validation of the random forest model (takes a long time to run). 
   #To skip this step, set to zero.
-  0 
+  1 
 
 ####1. Load and process data####
-SoilM <- read.csv('./Data/SugarloafSoilMoisture.csv',header=TRUE) #Observed Data
+SoilM <- read.csv('../Data/SugarloafSoilMoisture.csv',header=TRUE) #Observed Data
 
 
 if(Extrap){ #Set up gridded predictor values for predicting soil moisture in unmeasured areas of the watershed 
   SoilMbig <- #gridded dataframe
-    read.csv('./Data/Geospatial/RasterToPointsValues.csv',header=TRUE)  #Gridded data across full watershed.
+    read.csv('../Data/Geospatial/RasterToPointsValues.csv',header=TRUE)  #Gridded data across full watershed.
   SoilMbig <- SoilMbig[SoilMbig$aspect>-2,] #Get rid of bad data points
   SoilMbig <- SoilMbig[SoilMbig$SevNum<5,] #Get rid of bad data points
   SoilMbig <- SoilMbig[(SoilMbig$Veg!=3) & 
@@ -133,7 +133,7 @@ if (AggData){
   #This function takes the full dataset, which has multiple sample points per site 
   #it then calculates both the mean and maximum values for soil moisture (volumetric water content) 
   #and other variables of interest within each dominant vegetation type of each site.
-  source("./Code/Functions/AggSubSites.R")
+  source("../Code/Functions/AggSubSites.R")
   SoilM <- AggSubSites(SoilM)
   thetaM <- SoilM$Soil_Sat
 }
@@ -177,7 +177,7 @@ SoilM$Year<-as.factor(SoilM$Year)
 ####2. Random Forest modeling####
 
 #Load random forest model trained to Illilouette Creek Basin data
-load('./Code/Functions/ICB_RandomForestModel.rdata')
+load('../Code/Functions/ICB_RandomForestModel.rdata')
 Tfit_ICB<-Tfit #Save the Tfit model just loaded under a separate name.
 
 #Change variable names to match model.
@@ -195,13 +195,13 @@ Tfit <- randomForest(VWC ~
 
 ####3. Review output from Random Forest modeling####
 
-#Create importance plot showing which variables affect the model results the most (Figure D1). #GBFLAG this figure looks a bit different from what's in the appendix... Som variables are out of order, which I assume is do to the stochasticity in the model fits, but also the formatting is different in the paper. I'm fine leaving as-is, just confirming this is what you want.
+#Create importance plot showing which variables affect the model results the most (Figure D1). This may appear slightly different from the manuscript due to stochasticity in the model training.
 imp <- Tfit$importance
 barplot(xlab='Variable', ylab='Importance', names.arg=rownames(imp)[order(imp[, 1], decreasing=TRUE)], 
         height=imp[order(imp[, 1], decreasing=TRUE),1], cex.names=.5)
 
 #Create plots showing how individual variables (in this case, year) 
-  #affect the soil moisture independently of other variables (used to create Figure D3). #GBFLAG, again formatting here is rather different
+  #affect the soil moisture independently of other variables (used to create Figure D3). 
 a <- partialPlot(x=Tfit,pred.data=SoilM,x.var='Year',ylab='VWC')
 barplot(a$y,names=a$x,xlab='',ylab='VWC',ylim=c(0,20))
 barplot(a$y[order(a$y, decreasing=FALSE)],names=a$x[order(a$y, decreasing=FALSE)],ylim=c(0,20),xlab='',ylab='VWC')
@@ -227,9 +227,9 @@ if(Extrap){
   AllTrees <- PredTreeBig$individual
   StdTrees1 <- #Get the standard deviation of the predicted values over all trees
     apply(AllTrees,1,sd)
-  Q25Trees1 <- #Get the standard deviation of the predicted values over all trees #GBFLAG should be different from comment above? 
+  Q25Trees1 <- #Get the 25th percentile of the predicted values over all trees 
     apply(AllTrees,1,quantile,.25,na.rm=TRUE)
-  Q75Trees1 <- #Get the standard deviation of the predicted values over all trees #GBFLAG should be different from comment above? 
+  Q75Trees1 <- #Get the 75th percentile of the predicted values over all trees  
     apply(AllTrees,1,quantile,.75,na.rm=TRUE) 
   PredToday <- PredTreeBig$aggregate
   
@@ -245,9 +245,9 @@ if(Extrap){
   AllTrees <- PredTreeOld$individual
   StdTrees2 <- #Get the standard deviation of the predicted values over all trees
     apply(AllTrees,1,sd) 
-  Q25Trees2 <- #Get the standard deviation of the predicted values over all trees #GBFLAG should be different from comment above?
+  Q25Trees2 <- #Get the 25th percentil of the predicted values over all trees 
     apply(AllTrees,1,quantile,.25,na.rm=TRUE) 
-  Q75Trees2 <- #Get the standard deviation of the predicted values over all trees #GBFLAG should be different from comment above?
+  Q75Trees2 <- #Get the 75th percentile of the predicted values over all trees
     apply(AllTrees,1,quantile,.75,na.rm=TRUE) 
   PredUnburned <- PredTreeOld$aggregate
   
@@ -312,7 +312,7 @@ if(AggData){
   }
 
 
-SoilMpred <- #Calculate across all sites that were measured in June 2017
+SoilMpred <- #Calculate across all sites that were measured in June 2016
   SoilMpred[SoilMpred$Trip=='2016_Early' | 
               (SoilMpred$Site=='GBW7') | 
               ((SoilMpred$Trip=='2017_Early') & 
@@ -321,22 +321,22 @@ SoilMpred <- #Calculate across all sites that were measured in June 2017
                     (SoilMpred$Site=='LowSevMET')
                   )
                ),
-            ] #2017_Early',] #GBFLAG this comment needs explanation or deletion
+            ] 
 
-TempFrYrs <- (SoilMpred$Time_Since_Fire) #-1) use the -1 if using 2017 as base #GBFLAG should this comment be deprecated? If not, could it be clarified where 2017 would be set "as base"?
+TempFrYrs <- (SoilMpred$Time_Since_Fire) 
 Yrs <- unique(SoilM$Year)
 
 nsites <- length(SoilMpred$VWC)
-AllModMat <- #GBFLAG explanation?
+AllModMat <- #Create matrix to hold model output
   data.frame(Year=rep(0,5*nsites), DOY=rep(0,5*nsites), VWC=rep(0,5*nsites), Veg=rep(0,5*nsites))
 
+#Loop through the 5 site visits and calculate VWC at each site for each date
 for (i in 1:5){
-  #GBFLAG could we have a general explanation of what this for loop is doing
-  Yr<-Yrs[ceiling(i/2)] 
+  Yr<-Yrs[ceiling(i/2)] #Set the yera
   Trp<-TripVegMat[i,2]
   SoilMpred$Year<-Yr
-  if(Trp==1){
-    Dt<-178
+  if(Trp==1){ #Set DOY to 178 (June) or 205 (July)
+    Dt<-178   
     } else {
       Dt<-205
       }
@@ -345,6 +345,8 @@ for (i in 1:5){
   SoilMpred$Time_Since_Fire[SoilMpred$Time_Since_Fire>90] <- 100
   
   a <- predict(Tfit,SoilMpred)
+  
+  #Calculate means within each vegetation class
   
   TripVegMat[i,3]<-.01*mean(a[SoilMpred$Veg=='dense meadow'])
   TripVegMatSD[i,3]<-.01*sd(a[SoilMpred$Veg=='dense meadow'])
@@ -444,7 +446,7 @@ cor(SoilM$VWC,VWCpred_SL)
 cor(SoilM_match$VWC,VWCpred_ICB)
 
 #Create Figure D5  
-hist(VWCpred_SL-SoilM$VWC, col=rgb(0,0,0,.5), main='Model Error', #alpha=.5, #GBFLAG alpha is not a graphical parameter in my version of R, and removing it produces the same plot. Confirm deprecation.
+hist(VWCpred_SL-SoilM$VWC, col=rgb(0,0,0,.5), main='Model Error', 
      xlim=c(-40,40), xlab='Modeled-Measured Volumetric Water Content')
 hist(VWCpred_ICB-SoilM_match$VWC, col=rgb(1,0,0,.5), add=TRUE, breaks=c(-8:8)*5)  
   
@@ -452,11 +454,10 @@ hist(VWCpred_ICB-SoilM_match$VWC, col=rgb(1,0,0,.5), add=TRUE, breaks=c(-8:8)*5)
 #Validate the random forest model by training on subsets of data then testing on remaining data
 if(Validate){
   
+
   #Select random sites for training
   ns <- nrow(SiteMeans)
   pctX <- 0.70 #Proportion of sites to use
-  numX <- #GBFLAG The code breaks for me here; I don't have a variable called "CountCat" in SiteMeans, for either value of AggData (0 or 1).  I know this bit takes some time to run, but if we're going to include it I'd like to make sure it works on both our machines.
-    min(SiteMeans$CountCat)-1 #Number of sites to use from each category 
   NumSamps <- 100 #Number of times to run with random training set
   CorTrain <- 0 #Hold correlation for each training set
   CorTest <- 0 #Hold correlation for each test set
@@ -465,7 +466,7 @@ if(Validate){
   Top3 <- matrix(nrow=3,ncol=NumSamps)
   YearMeanVWC <- matrix(nrow=3,ncol=NumSamps) #Hold mean VWC for each year for each training set
   
-  SoilM$SiteNum <- floor(SoilM$SubSite) #GBFLAG description?
+  SoilM$SiteNum <- floor(SoilM$SubSite) #Each subsite is in the format X.Y, where X is the site number and Y is the subsite identifier, so rounding down gives the site number.
   
   for(g in 1:NumSamps){ 
     #Train the model numsamps times on different subsets of the data
@@ -492,8 +493,8 @@ if(Validate){
     PredTree2 <- predict(Tfit,Tstx,predict.all=TRUE)
     AllTrees <- PredTree2$individual
     StdTrees <- apply(AllTrees,1,sd) #Get the standard deviation of the predicted values over all trees
-    Q25Trees <- apply(AllTrees,1,quantile,.25) #Get the standard deviation of the predicted values over all trees #GBFLAG should be different from comment above? See line ~504 for similar example w/ different comment
-    Q75Trees <- apply(AllTrees,1,quantile,.75) #Get the standard deviation of the predicted values over all trees #GBFLAG should be different from comment above?
+    Q25Trees <- apply(AllTrees,1,quantile,.25) #Get the 25th percentile of the predicted values over all trees 
+    Q75Trees <- apply(AllTrees,1,quantile,.75) #Get the 75th percentile of the predicted values over all trees 
     
     PredTree2 <- PredTree2$aggregate
     MeanTrees <- apply(AllTrees,1,mean)#Just a test: make sure get same as PredTree2$aggregate
@@ -505,51 +506,23 @@ if(Validate){
     Q75Ttrees <- apply(AllTtrees,1,quantile,.75) #Get the 75th percentile of the predicted values over all trees
     PredThetaT <- PredThetaT$aggregate
     
-    #GBFLAg description?
+    #Save the correlation coefficient of modeled vs. observed values for this round of training (CorTrain) and test (CorTest) datasets
     CorTrain[g] = cor(PredThetaT,Trny)
     CorTest[g] = cor(Tsty,PredTree2)
     
-    #GBFLAg description?
+    #Save the root mean square error of modeled vs. observed values for this round of training (CorTrain) and test (CorTest) datasets
     RMSEtrain[g] = rmse(PredThetaT,Trny)
     RMSEtest[g] = rmse(PredTree2,Tsty)
     
-    #GBFLAg description?
+    #Record which variables were selected as the top 3 most important predictors in this round of training
     imp <- Tfit$importance
     Tlist <- rownames(imp)[order(imp[, 1], decreasing=TRUE)]
     Top3[,g] <- Tlist[1:3]
     
-    #GBFLAg description?
+    #Keep track of how year affects soil moisture in each training run
     a <- partialPlot(x=Tfit,pred.data=SoilM,x.var='Year',ylab='VWC')
     YearMeanVWC[,g] <- .01*a$y
     
-    if(g==1){#GBFLAg description?
-      errbar(.01*Trny, .01*PredThetaT, .01*Q75Ttrees, .01*Q25Ttrees, 
-             xlab='Measured', ylab='Fit to Training Data',main='Random Forest Model Fit to Training Data',
-             errbar.col='grey')
-      lines(c(0,.55),c(0,.55),col='red')
-      
-      #plot(.01*Tsty, .01*PredTree2, xlab='Measured', ylab='Predicted', main='Random Forest Model Fit to Test Data') #GBFLAG do you mean this to be commented out? Deprecate?
-      errbar(.01*Tsty, .01*PredTree2, .01*PredTree2+.01*StdTrees, .01*PredTree2-.01*StdTrees, 
-             xlab='Measured', ylab='Predicted', main='Random Forest Model Fit to Test Data', 
-             errbar.col='grey')
-      points(.01*Tsty,.01*PredTree2)
-      lines(c(0,.55),c(0,.55),col='red')
-      
-      errbar(.01*Tsty, .01*PredTree2, .01*Q75Trees, .01*Q25Trees, 
-             xlab='Measured', ylab='Predicted', main='Random Forest Model Fit to Test Data', 
-             errbar.col='grey')
-      points(.01*Tsty,.01*PredTree2)
-      lines(c(0,.55),c(0,.55),lty=2,col='grey')
-      
-      hist(.01*(PredTree2-Tsty), 
-           main='Random Forest Model Fit to Test Data' 
-           ,xlab='VWC Error (Predicted-Measured)'
-           )
-      sqrt(sum((PredTree2-Tsty)^2)/length(Tsty))
-      barplot(xlab='Variable', ylab='Importance', 
-              names.arg=rownames(imp)[order(imp[, 1], decreasing=TRUE)], 
-               height=imp[order(imp[, 1], decreasing=TRUE),1], cex.names=.5)
-    }
   }
   
   truehist(CorTrain,xlim=c(0,1))
