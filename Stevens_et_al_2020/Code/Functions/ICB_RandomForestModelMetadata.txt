@@ -1,0 +1,5 @@
+ICB_RandomForestModel.rdata is a random forest model structure created using the RandomForest package in R. It was trained on observed soil moisture data from the Illilouette Creek Basin in Yosemite National Park. 
+
+Details can be found in
+Boisramé G, Thompson S, Stephens S. 2018. Hydrologic responses to restored wildfire regimes revealed by soil moisture-vegetation relationships. Advances in Water Resources 112: 124-146.
+https://doi.org/10.1016/j.advwatres.2017.12.009 
