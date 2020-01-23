@@ -24,9 +24,6 @@ Validate <- #Set to "1" if want to run validation of the random forest model (ta
   #To skip this step, set to zero.
   1 
 
-#Be sure to set the working directory to this source file's location
-setwd("./Code")
-
 ####1. Load and process data####
 SoilM <- read.csv('./Data/SugarloafSoilMoisture.csv',header=TRUE) #Observed Data
 
@@ -255,7 +252,8 @@ if(Extrap){
   #Plot modeled soil moisture under current conditions, 
     #versus what soil mositure would be under unburned conditions.
     #This is use to create Figure 8 in the manuscript.
-  #The next two plots may appear slightly different from Figure 8 in the manuscript due to stochasticity in the model training.
+  #The next three plots may appear slightly different from Figure 8 in the manuscript,
+    #due to stochasticity in the model training.
   Fchange <- (SoilMbig$Veg73!=as.factor(SoilMbig$Veg14))
   plot(PredUnburned[Fchange], PredToday[Fchange], xlab="Modeled Unburned Soil Moisture (%)", 
        ylab="Modeled Actual Soil Moisture (%)", main="June 2018", xlim=c(3,45), ylim=c(3,45))
@@ -394,7 +392,7 @@ for (i in 1:5){
 AllModMat$Trip <- (AllModMat$Year+2015+AllModMat$DOY/365)
 
 #Figure 7 #
-pdf("./Figures/Fig7.pdf", width = 6.57, height = 3.92)
+#pdf("./Figures/Fig7.pdf", width = 6.57, height = 3.92) #option to print to file
 par(mar=c(2.6,4,1,1))
 boxplot(VWCmod~Trip+Veg, data=AllModMat, ann=FALSE, col=gray.colors(5,start=.3, end=.95), 
         at=c(1:5,7:11,13:17,19:23), xaxt="n",
@@ -407,7 +405,7 @@ mtext(at=c(3,9,15,21),c("Dense Meadow","Conifer","Shrub","Sparse"),
 points(x=c(1:5,7:11,13:17,19:23),y=100*TripVegMat[,3:6],pch=15)
 legend(18,54,c("June 2016","July 2016","June 2017","July 2017","June 2018"),
        fill=gray.colors(5,start=.3, end=.95))
-dev.off()
+#dev.off()
 #dev.copy2pdf(file="./Figures/tmp.pdf") #other option to print.
 
 ####6. Compare models from ICB and Sugarloaf ####
@@ -446,25 +444,25 @@ SoilM_match$SevNum <- as.factor(SoilM_match$SevNum)
 VWCpred_ICB <- predict(Tfit_ICB,SoilM_match)
 VWCpred_SL <- predict(Tfit,SoilM)
 
-pdf("./Figures/FigD4.pdf", width = 6.8, height = 6.0)
+#pdf("./Figures/FigD4.pdf", width = 6.8, height = 6.0) #option to print to file
 par(mar=c(4.4,4.1,1,1))
 plot(SoilM$VWC,VWCpred_SL,xlab='Measured SCB Moisture',ylab='Modeled',
      cex.lab = 1.1)
 lines(c(0,55),c(0,55),col='grey')
 points(SoilM_match$VWC,VWCpred_ICB,col='red')
 legend('bottomright',c('SCB Model','ICB Model'),col=c('black','red'),pch=1)
-dev.off()
+#dev.off() #if printing to file
 
 cor(SoilM$VWC,VWCpred_SL)
 cor(SoilM_match$VWC,VWCpred_ICB)
 
 #Create Figure D5  
-pdf("./Figures/FigD5.pdf", width = 5, height = 4)
+#pdf("./Figures/FigD5.pdf", width = 5, height = 4) #option to print to file
 hist(VWCpred_SL-SoilM$VWC, col=rgb(0,0,0,.5), main='Model Error', 
      xlim=c(-40,40), xlab='Modeled-Measured Volumetric Water Content',
      cex.lab = 0.8, cex.axis = 0.8, cex.main = 1)
 hist(VWCpred_ICB-SoilM_match$VWC, col=rgb(1,0,0,.5), add=TRUE, breaks=c(-8:8)*5)  
-dev.off()
+#dev.off() if printing to file
 
 
 #Validate the random forest model by training on subsets of data then testing on remaining data
