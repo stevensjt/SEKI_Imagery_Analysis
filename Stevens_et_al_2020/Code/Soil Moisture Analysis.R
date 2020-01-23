@@ -28,12 +28,12 @@ Validate <- #Set to "1" if want to run validation of the random forest model (ta
 setwd("./Code")
 
 ####1. Load and process data####
-SoilM <- read.csv('../Data/SugarloafSoilMoisture.csv',header=TRUE) #Observed Data
+SoilM <- read.csv('./Data/SugarloafSoilMoisture.csv',header=TRUE) #Observed Data
 
 
 if(Extrap){ #Set up gridded predictor values for predicting soil moisture in unmeasured areas of the watershed 
   SoilMbig <- #gridded dataframe
-    read.csv('../Data/Geospatial/RasterToPointsValues.csv',header=TRUE)  #Gridded data across full watershed.
+    read.csv('./Data/Geospatial/RasterToPointsValues.csv',header=TRUE)  #Gridded data across full watershed.
   SoilMbig <- SoilMbig[SoilMbig$aspect>-2,] #Get rid of bad data points
   SoilMbig <- SoilMbig[SoilMbig$SevNum<5,] #Get rid of bad data points
   SoilMbig <- SoilMbig[(SoilMbig$Veg!=3) & 
@@ -135,7 +135,7 @@ if (AggData){
   #This function takes the full dataset, which has multiple sample points per site 
   #it then calculates both the mean and maximum values for soil moisture (volumetric water content) 
   #and other variables of interest within each dominant vegetation type of each site.
-  source("../Code/Functions/AggSubSites.R")
+  source("./Code/Functions/AggSubSites.R")
   SoilM <- AggSubSites(SoilM)
   thetaM <- SoilM$Soil_Sat
 }
@@ -179,7 +179,7 @@ SoilM$Year<-as.factor(SoilM$Year)
 ####2. Random Forest modeling####
 
 #Load random forest model trained to Illilouette Creek Basin data
-load('../Code/Functions/ICB_RandomForestModel.rdata')
+load('./Code/Functions/ICB_RandomForestModel.rdata')
 Tfit_ICB<-Tfit #Save the Tfit model just loaded under a separate name.
 
 #Change variable names to match model.
@@ -207,8 +207,6 @@ barplot(xlab='Variable', ylab='Importance', names.arg=rownames(imp)[order(imp[, 
   #affect the soil moisture independently of other variables (used to create barplot panels in Figure D3). 
 a <- partialPlot(x=Tfit,pred.data=SoilM,x.var='Year',ylab='VWC')
 barplot(a$y,names=a$x,xlab='',ylab='VWC',ylim=c(0,20))
-barplot(a$y[order(a$y, decreasing=FALSE)],names=a$x[order(a$y, decreasing=FALSE)],ylim=c(0,20),xlab='',ylab='VWC')#GBFLAG I'm not sure why you're messing with the x variable order here but it seems unneccessary, can we deprecate this line?
-barplot(a$y[c(3,1,2,4)],names=a$x[c(3,1,2,4)],xlab='Year',ylab='VWC',ylim=c(0,20)) #GBFLAG similarly not sure why x axis is being compressed here. Presumably playing with different plot configs? I feel like we can probably deprecate this line too.
 
 #Create plots showing how individual variables (in this case, upslope area) 
   #affect the soil moisture independently of other variables (used to create components of Figures D2 and D3).
@@ -257,6 +255,7 @@ if(Extrap){
   #Plot modeled soil moisture under current conditions, 
     #versus what soil mositure would be under unburned conditions.
     #This is use to create Figure 8 in the manuscript.
+  #The next two plots may appear slightly different from Figure 8 in the manuscript due to stochasticity in the model training.
   Fchange <- (SoilMbig$Veg73!=as.factor(SoilMbig$Veg14))
   plot(PredUnburned[Fchange], PredToday[Fchange], xlab="Modeled Unburned Soil Moisture (%)", 
        ylab="Modeled Actual Soil Moisture (%)", main="June 2018", xlim=c(3,45), ylim=c(3,45))
@@ -279,11 +278,11 @@ if(Extrap){
   
   #Create histogram of change, included in Figure 8
   hist(PredToday[Fchange] - PredUnburned[Fchange], 
-       breaks=seq(-4.25,4.25,.5), main="June 2018", xlab="Actual-Unburned Soil Moisture (%)") #GBFLAG I notice that for me this histogram is slightly different from the manuscript version. I assume due again to stochasticity, if so, could you put a note on line 280 to that effect, similar to what you did on line 201?
+       breaks=seq(-4.25,4.25,.5), main="June 2018", xlab="Actual-Unburned Soil Moisture (%)") 
   hist(100*(PredToday[Fchange]-PredUnburned[Fchange])/PredUnburned[Fchange], 
        main="July 2016",xlab="% Change in Actual-Unburned Soil Moisture")
   print("Mean difference in soil moisture under observed fire minus simulated no fire scenario:")
-  print(paste(round(mean(PredToday[Fchange]-PredUnburned[Fchange]),2), "%")) #GBFLAG note this addition to explain this seemingly random number that is printed to the console. Confirm this makes sense.
+  print(paste(round(mean(PredToday[Fchange]-PredUnburned[Fchange]),2), "%")) 
 }
 
 ####5. Model validation and plotting soil moisture across SCB subsites####
@@ -395,7 +394,7 @@ for (i in 1:5){
 AllModMat$Trip <- (AllModMat$Year+2015+AllModMat$DOY/365)
 
 #Figure 7 #
-pdf("../Figures/Fig7.pdf", width = 6.57, height = 3.92)
+pdf("./Figures/Fig7.pdf", width = 6.57, height = 3.92)
 par(mar=c(2.6,4,1,1))
 boxplot(VWCmod~Trip+Veg, data=AllModMat, ann=FALSE, col=gray.colors(5,start=.3, end=.95), 
         at=c(1:5,7:11,13:17,19:23), xaxt="n",
@@ -409,7 +408,7 @@ points(x=c(1:5,7:11,13:17,19:23),y=100*TripVegMat[,3:6],pch=15)
 legend(18,54,c("June 2016","July 2016","June 2017","July 2017","June 2018"),
        fill=gray.colors(5,start=.3, end=.95))
 dev.off()
-#dev.copy2pdf(file="../Figures/tmp.pdf") #other option to print.
+#dev.copy2pdf(file="./Figures/tmp.pdf") #other option to print.
 
 ####6. Compare models from ICB and Sugarloaf ####
 #This creates Figures D4 and D5
@@ -447,7 +446,7 @@ SoilM_match$SevNum <- as.factor(SoilM_match$SevNum)
 VWCpred_ICB <- predict(Tfit_ICB,SoilM_match)
 VWCpred_SL <- predict(Tfit,SoilM)
 
-pdf("../Figures/FigD4.pdf", width = 6.8, height = 6.0)
+pdf("./Figures/FigD4.pdf", width = 6.8, height = 6.0)
 par(mar=c(4.4,4.1,1,1))
 plot(SoilM$VWC,VWCpred_SL,xlab='Measured SCB Moisture',ylab='Modeled',
      cex.lab = 1.1)
@@ -460,7 +459,7 @@ cor(SoilM$VWC,VWCpred_SL)
 cor(SoilM_match$VWC,VWCpred_ICB)
 
 #Create Figure D5  
-pdf("../Figures/FigD5.pdf", width = 5, height = 4)
+pdf("./Figures/FigD5.pdf", width = 5, height = 4)
 hist(VWCpred_SL-SoilM$VWC, col=rgb(0,0,0,.5), main='Model Error', 
      xlim=c(-40,40), xlab='Modeled-Measured Volumetric Water Content',
      cex.lab = 0.8, cex.axis = 0.8, cex.main = 1)
@@ -548,7 +547,7 @@ if(Validate){
     Top3[,g] <- Tlist[1:3]
     
     #Keep track of how year affects soil moisture in each training run
-    a <- partialPlot(x=Tfit,pred.data=SoilM,x.var='Year',ylab='VWC', plot = FALSE) #GBFLAG: I added "plot = FALSE" here because otherwise it prints g# of plots here in the console, which seems unneccessary. Confirm ok. 
+    a <- partialPlot(x=Tfit,pred.data=SoilM,x.var='Year',ylab='VWC', plot = FALSE)  
     YearMeanVWC[,g] <- .01*a$y
     
   }
